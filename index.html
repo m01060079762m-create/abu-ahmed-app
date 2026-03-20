@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة المحمول الاحترافية V2.0</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --primary: #25D366; --danger: #e74c3c; --blue: #3498db; --bg: #f4f7f6; --dark: #2c3e50; --gold: #f1c40f; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; }
+        
+        /* تعديل: جعل نقطة الحالة ظاهرة دائماً وبتنسيق ثابت */
+        #syncIndicator { position: fixed; top: 10px; left: 10px; z-index: 9999; display: flex; align-items: center; gap: 5px; background: white; padding: 5px 12px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 12px; font-weight: bold; border: 1px solid #eee; }
+        #statusDot { width: 10px; height: 10px; border-radius: 50%; background: #bbb; transition: 0.3s; }
+        .dot-red { background: var(--danger) !important; }
+        .dot-green-blink { background: var(--primary) !important; animation: blink 0.5s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        .container { max-width: 600px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 10px; border-bottom: 4px solid var(--primary); }
+        .logo-txt { font-size: 18px; font-weight: bold; color: var(--dark); }
+        .stats-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-card { background: white; padding: 10px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .stat-card span { display: block; font-size: 11px; color: #777; }
+        .stat-card b { font-size: 18px; color: var(--dark); }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
+        button { border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 8px; transition: 0.3s; }
+        .btn-save { background: var(--dark); color: white; }
+        .btn-image { background: var(--blue); color: white; }
+        .btn-whatsapp { background: var(--primary); color: white; }
+        .btn-del-item { background: none; color: var(--danger); font-size: 14px; width: auto; padding: 5px; margin: 0; }
+        .btn-sync { background: #6c5ce7; color: white; }
+        .search-box { background: white; padding: 5px 15px; border-radius: 25px; margin-bottom: 15px; border: 1px solid #ddd; }
+        .customer-row { background: white; padding: 12px 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-right: 5px solid var(--blue); transition: 0.2s; }
+        .cust-info { flex-grow: 1; cursor: pointer; }
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        .history-table th, .history-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
+        #receiptArea { background: white; padding: 50px; width: 1000px; margin: 20px auto; border: 20px solid var(--dark); display: none; position: absolute; left: -9999px; }
+        .r-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #eee; padding-bottom: 30px; margin-bottom: 30px; }
+        .r-logo-img { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 5px solid var(--dark); }
+        .r-info { text-align: right; flex-grow: 1; margin-right: 30px; }
+        .r-info h2 { font-size: 55px; margin: 0; color: var(--dark); }
+        .r-info p { font-size: 28px; margin: 8px 0; color: #555; }
+        .r-table { width: 100%; border-collapse: collapse; }
+        .r-table th { background: #f8f9fa; font-size: 26px; padding: 18px; border: 2px solid #ddd; }
+        .r-table td { font-size: 24px; padding: 18px; border: 2px solid #ddd; text-align: center; }
+        .r-total-box { background: var(--dark); color: white; padding: 30px; margin-top: 40px; text-align:center; border-radius: 20px; font-size: 50px; font-weight: bold; }
+        .r-footer { text-align: center; margin-top: 40px; font-size: 28px; border-top: 3px dashed #ccc; padding-top: 30px; }
+        .cloud-sync-card { border: 2px solid #4285F4 !important; background: #f8fbff !important; }
+    </style>
+</head>
+<body>
+
+<div id="syncIndicator">
+    <div id="statusDot"></div>
+    <span id="syncPercent">0%</span>
+</div>
+
+<div class="container">
+    <div id="mainView">
+        <div class="header">
+            <div class="logo-txt" id="displayShopName">تحميل...</div>
+            <button class="btn-settings" onclick="toggleSettings()" style="background:none; border:none; font-size:24px;">⚙️</button>
+        </div>
+        <div class="stats-bar">
+            <div class="stat-card" style="border-bottom: 3px solid green;"><span>إجمالي لنا</span><b id="totalLana" style="color: green;">0</b></div>
+            <div class="stat-card" style="border-bottom: 3px solid red;"><span>إجمالي علينا</span><b id="totalAlina" style="color: red;">0</b></div>
+        </div>
+        <div class="card">
+            <h3 style="margin:0 0 10px 0; font-size: 16px;">➕ إضافة عميل</h3>
+            <div style="display: flex; gap: 5px;"><input type="text" id="newCustName" placeholder="الاسم"><input type="tel" id="newCustPhone" placeholder="رقم الموبايل"></div>
+            <button class="btn-whatsapp" onclick="addCustomer()">إضافة للقائمة +</button>
+        </div>
+        <input type="text" id="searchInput" class="search-box" placeholder="🔍 ابحث بالاسم أو الرقم..." oninput="renderCustomers()">
+        <div id="customersDisplay"></div>
+    </div>
+
+    <div id="settingsView" style="display:none">
+        <div class="card">
+            <h3>⚙️ الإعدادات</h3>
+            <label>اسم المحل:</label><input type="text" id="setShopName">
+            <label>أرقام التواصل:</label><input type="text" id="setShopPhones">
+            <label>شعار المحل (Logo):</label><input type="file" id="setShopLogo" accept="image/*" onchange="previewImage(this)">
+            <img id="logoPreview" style="width:80px; height:80px; border-radius:50%; display:none; margin:10px auto;">
+            <button class="btn-save" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+        </div>
+        <div class="card cloud-sync-card">
+            <h3>☁️ سحابة Google Sheets</h3>
+            <label>كود المزامنة الخاص بك:</label><input type="text" id="syncKeyInput" placeholder="اكتب كود المزامنة هنا">
+            <button onclick="cloudAction('upload')" style="background:#4285F4; color:white;">📤 رفع يدوي الآن</button>
+            <button onclick="cloudAction('download')" style="background:#34A853; color:white;">📥 استرجاع من الجوجل</button>
+            <p id="syncStatus" style="font-size: 11px; text-align: center; margin-top: 5px; font-weight: bold;"></p>
+        </div>
+        <div class="card" style="border: 2px dashed #6c5ce7;">
+            <h3>📦 النسخ الاحتياطي اليدوي</h3>
+            <button class="btn-sync" onclick="exportFullData()">📤 نسخ كود البيانات</button>
+            <hr><textarea id="importDataArea" rows="3" placeholder="الصق الكود هنا..."></textarea>
+            <button onclick="importFullData()" style="background:#27ae60; color:white;">📥 استرجاع الكود</button>
+        </div>
+    </div>
+
+    <div id="customerProfile" style="display:none">
+        <div class="card">
+            <h2 id="currentCustName" style="margin:0; color: var(--blue);"></h2>
+            <div id="currentBalance" style="font-size: 22px; font-weight: bold; margin: 10px 0;"></div>
+            <hr>
+            <div style="display: flex; gap: 5px;">
+                <select id="transType" style="flex: 1;"><option value="add">عليه</option><option value="sub">سدد</option></select>
+                <input type="number" id="transAmount" placeholder="المبلغ" style="flex: 1;">
+            </div>
+            <input type="text" id="transNote" placeholder="بيان العملية">
+            <button class="btn-save" onclick="processEntry(false)">✅ حفظ فقط</button>
+            <button class="btn-whatsapp" onclick="processEntry(true)">💬 حفظ وإرسال واتساب</button>
+            <button class="btn-image" onclick="generateImageReport()">🖼️ كشف حساب صورة</button>
+            <button id="downloadBtn" style="display:none; background:var(--gold); color:black;" onclick="downloadImage()">⬇️ تنزيل الصورة</button>
+        </div>
+        <div class="card"><h4 style="margin:0 0 10px 0;">السجل الأخير:</h4><table class="history-table"><tbody id="fullHistoryBody"></tbody></table></div>
+    </div>
+</div>
+
+<div id="receiptArea">
+    <div class="r-header"><div class="r-info"><h2 id="rShopName"></h2><p id="rShopPhones"></p><p style="font-size:35px; margin-top:20px;">كشف حساب: <b id="rCustName"></b></p></div><img id="rLogo" src="" class="r-logo-img"></div>
+    <table class="r-table"><thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>الملاحظة</th></tr></thead><tbody id="rBody"></tbody></table>
+    <div class="r-total-box">إجمالي المطلوب: <span id="rTotal"></span></div>
+    <div class="r-footer" id="rThanksMsg">نشكركم لثقتكم بنا</div>
+</div>
+
+<script>
+    let customers = JSON.parse(localStorage.getItem('abu_ahmed_data')) || [];
+    let settings = JSON.parse(localStorage.getItem('abu_ahmed_settings')) || { shopName: "منظومة أبو أحمد مصطفى", phones: "010xxxxxxx", logo: "" };
+    let activeIdx = null;
+    let lastGeneratedImg = null;
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwsmS1Ayeeo0l7LSYNu6bJEIckQ-Zn4rXfHVWCfGIlm5U2W5cU3eD1l3eHI6zbtpA/exec";
+
+    window.addEventListener('popstate', function () { showMain(); });
+    function pushNewState() { history.pushState({page: 'sub'}, ""); }
+
+    function init() {
+        document.getElementById('displayShopName').innerText = settings.shopName;
+        document.getElementById('setShopName').value = settings.shopName;
+        document.getElementById('setShopPhones').value = settings.phones;
+        calculateGlobalStats(); renderCustomers();
+    }
+
+    function calculateGlobalStats() {
+        let lana = 0, alina = 0;
+        customers.forEach(c => {
+            let bal = c.history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0);
+            if(bal > 0) lana += bal; else alina += Math.abs(bal);
+        });
+        document.getElementById('totalLana').innerText = lana + " ج.م";
+        document.getElementById('totalAlina').innerText = alina + " ج.م";
+    }
+
+    function renderCustomers() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = customers.filter(c => c.name.toLowerCase().includes(term) || c.phone.includes(term));
+        document.getElementById('customersDisplay').innerHTML = filtered.map((c, i) => {
+            const originalIndex = customers.indexOf(c);
+            let bal = c.history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0);
+            return `<div class="customer-row"><div class="cust-info" onclick="openProfile(${originalIndex})"><strong>${c.name}</strong><br><small style="color:${bal > 0 ? 'red' : 'green'}">${bal > 0 ? 'عليه: ' + bal : 'له: ' + Math.abs(bal)} ج.م</small></div><button style="width:40px; color:red; background:none; font-size:18px;" onclick="deleteCustomer(${originalIndex})">🗑️</button></div>`;
+        }).join('');
+    }
+
+    function addCustomer() {
+        const name = document.getElementById('newCustName').value.trim();
+        const phone = document.getElementById('newCustPhone').value.trim();
+        if(!name) return alert("يرجى إدخال اسم العميل");
+        customers.push({ name, phone, history: [] });
+        save(); init();
+        document.getElementById('newCustName').value = ''; document.getElementById('newCustPhone').value = '';
+    }
+
+    function deleteCustomer(i) { if(confirm("هل أنت متأكد؟")) { customers.splice(i, 1); save(); init(); } }
+
+    function openProfile(i) {
+        activeIdx = i;
+        document.getElementById('mainView').style.display = 'none';
+        document.getElementById('settingsView').style.display = 'none';
+        document.getElementById('customerProfile').style.display = 'block';
+        document.getElementById('currentCustName').innerText = customers[i].name;
+        document.getElementById('downloadBtn').style.display = 'none';
+        updateUI(); pushNewState();
+    }
+
+    function processEntry(shouldSend) {
+        const amount = parseFloat(document.getElementById('transAmount').value);
+        const type = document.getElementById('transType').value;
+        const note = document.getElementById('transNote').value || "عملية رصيد";
+        if(!amount) return alert("أدخل المبلغ");
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
+        const dateStr = now.toLocaleDateString('ar-EG');
+        customers[activeIdx].history.push({ id: Date.now(), amount, type, note, date: `${dateStr} (${timeStr})` });
+        save(); updateUI(); calculateGlobalStats();
+        if(shouldSend) {
+            let p = customers[activeIdx].phone;
+            const total = customers[activeIdx].history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0);
+            const msg = `*${settings.shopName}*%0A*العميل:* ${customers[activeIdx].name}%0A*المبلغ:* ${amount}%0A*الإجمالي:* ${total}`;
+            window.open(`https://wa.me/2${p}?text=${msg}`);
+        }
+    }
+
+    function updateUI() {
+        const total = customers[activeIdx].history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0);
+        document.getElementById('currentBalance').innerHTML = `الحساب: <span style="color:${total>=0?'red':'green'}">${total} ج.م</span>`;
+        const history = [...customers[activeIdx].history].reverse();
+        document.getElementById('fullHistoryBody').innerHTML = history.map((h, i) => `<tr><td>${h.date}</td><td>${h.amount}</td><td>${h.note}</td><td><button class="btn-del-item" onclick="deleteItem(${i})">❌</button></td></tr>`).join('');
+    }
+
+    function deleteItem(i) {
+        if(confirm("حذف؟")) {
+            const rev = [...customers[activeIdx].history].reverse();
+            const id = rev[i].id;
+            customers[activeIdx].history = customers[activeIdx].history.filter(h => h.id !== id);
+            save(); updateUI(); calculateGlobalStats();
+        }
+    }
+
+    // تعديل: الحفظ يقوم بالرفع التلقائي للسحابة
+    function save() { 
+        localStorage.setItem('abu_ahmed_data', JSON.stringify(customers));
+        const key = document.getElementById('syncKeyInput').value.trim();
+        if(key) cloudAction('upload'); // رفع تلقائي إذا وجد الكود
+    }
+
+    function toggleSettings() {
+        const sv = document.getElementById('settingsView');
+        const isHidden = sv.style.display === 'none';
+        sv.style.display = isHidden ? 'block' : 'none';
+        document.getElementById('mainView').style.display = isHidden ? 'none' : 'block';
+        document.getElementById('customerProfile').style.display = 'none';
+        if(isHidden) pushNewState();
+    }
+
+    function saveSettings() {
+        settings.shopName = document.getElementById('setShopName').value;
+        settings.phones = document.getElementById('setShopPhones').value;
+        localStorage.setItem('abu_ahmed_settings', JSON.stringify(settings));
+        init(); showMain();
+    }
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => { settings.logo = e.target.result; document.getElementById('logoPreview').src = e.target.result; document.getElementById('logoPreview').style.display = 'block'; };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function showMain() { 
+        document.getElementById('mainView').style.display = 'block'; 
+        document.getElementById('customerProfile').style.display = 'none'; 
+        document.getElementById('settingsView').style.display = 'none'; 
+        renderCustomers(); 
+    }
+
+    function generateImageReport() {
+        const cust = customers[activeIdx];
+        document.getElementById('rShopName').innerText = settings.shopName;
+        document.getElementById('rShopPhones').innerText = settings.phones;
+        document.getElementById('rCustName').innerText = cust.name;
+        document.getElementById('rLogo').src = settings.logo || "";
+        let total = 0;
+        document.getElementById('rBody').innerHTML = cust.history.map(h => {
+            total += (h.type === 'add' ? h.amount : -h.amount);
+            return `<tr><td>${h.date.split(' ')[0]}</td><td>${h.type==='add'?'عليه':'سدد'}</td><td>${h.amount}</td><td>${h.note}</td></tr>`;
+        }).join('');
+        document.getElementById('rTotal').innerText = total + " ج.م";
+        const area = document.getElementById('receiptArea');
+        area.style.display = 'block';
+        html2canvas(area, { scale: 2, useCORS: true }).then(canvas => {
+            lastGeneratedImg = canvas.toDataURL("image/png");
+            area.style.display = 'none';
+            document.getElementById('downloadBtn').style.display = 'block';
+            alert("تم تجهيز الصورة بنجاح!");
+        });
+    }
+
+    function downloadImage() {
+        if(!lastGeneratedImg) return;
+        const link = document.createElement('a');
+        link.download = `Account_${customers[activeIdx].name}.png`;
+        link.href = lastGeneratedImg;
+        link.click();
+    }
+
+    async function cloudAction(type) {
+        const key = document.getElementById('syncKeyInput').value.trim();
+        if(!key) return; 
+        const status = document.getElementById('syncStatus');
+        const dot = document.getElementById('statusDot');
+        const percentTxt = document.getElementById('syncPercent');
+        
+        if(type === 'upload') {
+            dot.classList.add('dot-red');
+            let progress = 0;
+            let interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 20) + 10;
+                if(progress >= 90) { clearInterval(interval); percentTxt.innerText = "90%"; }
+                else { percentTxt.innerText = progress + "%"; }
+            }, 100);
+
+            const payload = { action: "upload", key: key, data: JSON.stringify({ customers, settings }) };
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }).then(() => {
+                clearInterval(interval);
+                percentTxt.innerText = "100%";
+                if(status) status.innerText = "✅ تم المزامنة تلقائياً";
+                
+                dot.classList.remove('dot-red');
+                dot.classList.add('dot-green-blink');
+                setTimeout(() => {
+                    dot.classList.remove('dot-green-blink');
+                    percentTxt.innerText = "0%";
+                }, 5000);
+            }).catch(() => {
+                clearInterval(interval);
+                dot.classList.remove('dot-red');
+                percentTxt.innerText = "ERR";
+            });
+        } else {
+            // الاسترجاع اليدوي
+            fetch(`${GOOGLE_SCRIPT_URL}?key=${key}`).then(res => res.json()).then(result => {
+                if(result && result.customers) {
+                    customers = result.customers; settings = result.settings;
+                    localStorage.setItem('abu_ahmed_data', JSON.stringify(customers));
+                    localStorage.setItem('abu_ahmed_settings', JSON.stringify(settings));
+                    location.reload();
+                }
+            });
+        }
+    }
+
+    function exportFullData() {
+        navigator.clipboard.writeText(JSON.stringify({customers, settings}));
+        alert("تم نسخ البيانات");
+    }
+
+    function importFullData() {
+        const data = document.getElementById('importDataArea').value;
+        if(!data) return;
+        try {
+            const parsed = JSON.parse(data);
+            customers = parsed.customers; settings = parsed.settings;
+            save(); location.reload();
+        } catch(e) { alert("الكود خطأ"); }
+    }
+
+    init();
+</script>
+</body>
+</html>
