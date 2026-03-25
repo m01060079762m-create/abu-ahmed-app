@@ -21,7 +21,6 @@
         .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 10px; border-bottom: 4px solid var(--primary); }
         .logo-txt { font-size: 18px; font-weight: bold; color: var(--dark); }
         
-        /* أيقونة الإشعارات */
         .notif-badge { position: relative; }
         .badge-count { position: absolute; top: -5px; right: -5px; background: red; color: white; font-size: 10px; padding: 2px 5px; border-radius: 50%; display: none; }
 
@@ -185,7 +184,6 @@
         window.speechSynthesis.speak(msg);
     }
 
-    // --- نظام الإشعارات الجديد ---
     function checkDelayedCustomers() {
         const now = Date.now();
         let delayed = [];
@@ -194,34 +192,13 @@
             const hoursPassed = (now - lastEntry) / (1000 * 60 * 60);
             if (hoursPassed >= 24) delayed.push(c);
         });
-
-        // تحديث البادج
         const badge = document.getElementById('notifBadge');
         if(delayed.length > 0) {
             badge.innerText = delayed.length;
             badge.style.display = 'block';
-            sendMobileNotification(delayed.length);
         } else {
             badge.style.display = 'none';
         }
-        
-        // مسح الإشعارات القديمة (بعد ساعتين من رؤيتها)
-        Object.keys(seenNotifs).forEach(key => {
-            if (now - seenNotifs[key] > (2 * 60 * 60 * 1000)) delete seenNotifs[key];
-        });
-        localStorage.setItem('abu_ahmed_seen_notifs', JSON.stringify(seenNotifs));
-    }
-
-    function sendMobileNotification(count) {
-        if (!("Notification" in window)) return;
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                new Notification(settings.shopName, {
-                    body: `يوجد لديك ${count} عملاء متأخرين منذ أكثر من 24 ساعة.`,
-                    icon: settings.logo || ""
-                });
-            }
-        });
     }
 
     function toggleNotifications() {
@@ -229,9 +206,6 @@
         document.getElementById('notificationsView').style.display = 'block';
         renderDelayedList();
         pushNewState();
-        // تسجيل وقت الرؤية للحذف التلقائي بعد ساعتين
-        seenNotifs['lastView'] = Date.now();
-        localStorage.setItem('abu_ahmed_seen_notifs', JSON.stringify(seenNotifs));
     }
 
     function renderDelayedList() {
@@ -241,10 +215,7 @@
             const lastEntry = c.history.length > 0 ? c.history[c.history.length - 1].id : Date.now();
             const hoursPassed = Math.floor((now - lastEntry) / (1000 * 60 * 60));
             if (hoursPassed >= 24) {
-                delayedContent += `
-                    <div class="customer-row" style="border-right-color: orange;">
-                        <div class="cust-info"><strong>${c.name}</strong><br><small>متأخر منذ ${hoursPassed} ساعة</small></div>
-                    </div>`;
+                delayedContent += `<div class="customer-row" style="border-right-color: orange;"><div class="cust-info"><strong>${c.name}</strong><br><small>متأخر منذ ${hoursPassed} ساعة</small></div></div>`;
             }
         });
         document.getElementById('notifList').innerHTML = delayedContent || "<p style='text-align:center;'>لا يوجد متأخرين حالياً</p>";
@@ -254,23 +225,13 @@
         document.getElementById('notifBadge').style.display = 'none';
         showMain();
     }
-    // ----------------------------
 
     function init() {
         document.getElementById('displayShopName').innerText = settings.shopName;
         document.getElementById('setShopName').value = settings.shopName;
         document.getElementById('setShopPhones').value = settings.phones;
-        cleanTrash();
         checkDelayedCustomers();
         calculateGlobalStats(); renderCustomers();
-        const key = document.getElementById('syncKeyInput').value.trim();
-        if(key) { cloudAction('upload'); }
-    }
-
-    function cleanTrash() {
-        const now = Date.now();
-        trash = trash.filter(item => (now - item.deletedAt) < (24 * 60 * 60 * 1000));
-        localStorage.setItem('abu_ahmed_trash', JSON.stringify(trash));
     }
 
     function calculateGlobalStats() {
@@ -298,83 +259,43 @@
         const phone = document.getElementById('newCustPhone').value.trim();
         if(!name) return alert("يرجى إدخال اسم العميل");
         customers.push({ name, phone, history: [] });
-        save(); init();
-        speak(name);
+        save(); init(); speak(name);
         document.getElementById('newCustName').value = ''; document.getElementById('newCustPhone').value = '';
     }
 
     function deleteCustomer(i) { 
-        if(confirm("هل تريد نقل العميل لسلة المحذوفات؟")) { 
+        if(confirm("نقل للسلة؟")) { 
             let deletedCust = customers.splice(i, 1)[0];
             deletedCust.deletedAt = Date.now();
             trash.push(deletedCust);
             localStorage.setItem('abu_ahmed_trash', JSON.stringify(trash));
             save(); init(); 
-            speak("تم الحذف بنجاح");
         } 
-    }
-
-    function toggleTrash() {
-        document.getElementById('mainView').style.display = 'none';
-        document.getElementById('trashView').style.display = 'block';
-        document.getElementById('notificationsView').style.display = 'none';
-        renderTrash();
-        pushNewState();
-    }
-
-    function renderTrash() {
-        document.getElementById('trashList').innerHTML = trash.map((item, i) => `
-            <div class="customer-row">
-                <div class="cust-info"><strong>${item.name}</strong></div>
-                <button onclick="restoreCustomer(${i})" style="width:auto; padding:5px 10px; background:var(--primary); color:white; border-radius:5px;">استعادة</button>
-            </div>
-        `).join('') || "<p style='text-align:center;'>السلة فارغة</p>";
-    }
-
-    function restoreCustomer(i) {
-        let restored = trash.splice(i, 1)[0];
-        delete restored.deletedAt;
-        customers.push(restored);
-        localStorage.setItem('abu_ahmed_trash', JSON.stringify(trash));
-        save(); showMain();
-        speak("تمت الإستعادة بنجاح");
     }
 
     function openProfile(i) {
         activeIdx = i;
         document.getElementById('mainView').style.display = 'none';
-        document.getElementById('settingsView').style.display = 'none';
-        document.getElementById('trashView').style.display = 'none';
-        document.getElementById('notificationsView').style.display = 'none';
         document.getElementById('customerProfile').style.display = 'block';
         document.getElementById('currentCustName').innerText = customers[i].name;
-        document.getElementById('downloadBtn').style.display = 'none';
         updateUI(); pushNewState();
     }
 
     function processEntry(shouldSend) {
         const amountEl = document.getElementById('transAmount');
-        const noteEl = document.getElementById('transNote');
         const amount = parseFloat(amountEl.value);
         const type = document.getElementById('transType').value;
-        const note = noteEl.value || "عملية رصيد";
-        
+        const note = document.getElementById('transNote').value || "عملية رصيد";
         if(!amount) return alert("أدخل المبلغ");
         const now = new Date();
         const timeStr = now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
-        const dateStr = now.toLocaleDateString('ar-EG');
-        customers[activeIdx].history.push({ id: Date.now(), amount, type, note, date: `${dateStr} (${timeStr})` });
-        
+        customers[activeIdx].history.push({ id: Date.now(), amount, type, note, date: `${now.toLocaleDateString('ar-EG')} (${timeStr})` });
         save(); updateUI(); calculateGlobalStats();
-        
-        amountEl.value = "";
-        noteEl.value = "";
-
+        amountEl.value = ""; document.getElementById('transNote').value = "";
         if(shouldSend) {
-            let p = customers[activeIdx].phone;
             const total = customers[activeIdx].history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0);
-            const msg = `*${settings.shopName}*%0A*العميل:* ${customers[activeIdx].name}%0A*المبلغ:* ${amount}%0A*الإجمالي:* ${total}`;
-            window.open(`https://wa.me/2${p}?text=${msg}`);
+            const msg = `*${settings.shopName}*%0Aالعميل: ${customers[activeIdx].name}%0Aالمبلغ: ${amount}%0Aالإجمالي: ${total}`;
+            window.open(`https://wa.me/2${customers[activeIdx].phone}?text=${msg}`);
         }
     }
 
@@ -382,16 +303,7 @@
         const total = customers[activeIdx].history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0);
         document.getElementById('currentBalance').innerHTML = `الحساب: <span style="color:${total>=0?'red':'green'}">${total} ج.م</span>`;
         const history = [...customers[activeIdx].history].reverse();
-        document.getElementById('fullHistoryBody').innerHTML = history.map((h, i) => `<tr><td>${h.date}</td><td>${h.amount}</td><td>${h.note}</td><td><button class="btn-del-item" onclick="deleteItem(${i})">❌</button></td></tr>`).join('');
-    }
-
-    function deleteItem(i) {
-        if(confirm("حذف؟")) {
-            const rev = [...customers[activeIdx].history].reverse();
-            const id = rev[i].id;
-            customers[activeIdx].history = customers[activeIdx].history.filter(h => h.id !== id);
-            save(); updateUI(); calculateGlobalStats();
-        }
+        document.getElementById('fullHistoryBody').innerHTML = history.map((h, i) => `<tr><td>${h.date}</td><td>${h.amount}</td><td>${h.note}</td></tr>`).join('');
     }
 
     function save() { 
@@ -400,15 +312,16 @@
         if(key) cloudAction('upload'); 
     }
 
+    function showMain() { 
+        document.querySelectorAll('.container > div').forEach(d => d.style.display = 'none');
+        document.getElementById('mainView').style.display = 'block'; 
+        renderCustomers(); 
+    }
+
     function toggleSettings() {
-        const sv = document.getElementById('settingsView');
-        const isHidden = sv.style.display === 'none';
-        sv.style.display = isHidden ? 'block' : 'none';
-        document.getElementById('mainView').style.display = isHidden ? 'none' : 'block';
-        document.getElementById('customerProfile').style.display = 'none';
-        document.getElementById('trashView').style.display = 'none';
-        document.getElementById('notificationsView').style.display = 'none';
-        if(isHidden) pushNewState();
+        document.getElementById('mainView').style.display = 'none';
+        document.getElementById('settingsView').style.display = 'block';
+        pushNewState();
     }
 
     function saveSettings() {
@@ -416,23 +329,6 @@
         settings.phones = document.getElementById('setShopPhones').value;
         localStorage.setItem('abu_ahmed_settings', JSON.stringify(settings));
         init(); showMain();
-    }
-
-    function previewImage(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => { settings.logo = e.target.result; document.getElementById('logoPreview').src = e.target.result; document.getElementById('logoPreview').style.display = 'block'; };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    function showMain() { 
-        document.getElementById('mainView').style.display = 'block'; 
-        document.getElementById('customerProfile').style.display = 'none'; 
-        document.getElementById('settingsView').style.display = 'none'; 
-        document.getElementById('trashView').style.display = 'none';
-        document.getElementById('notificationsView').style.display = 'none';
-        renderCustomers(); 
     }
 
     function generateImageReport() {
@@ -449,16 +345,14 @@
         document.getElementById('rTotal').innerText = total + " ج.م";
         const area = document.getElementById('receiptArea');
         area.style.display = 'block';
-        html2canvas(area, { scale: 2, useCORS: true }).then(canvas => {
+        html2canvas(area, { scale: 2 }).then(canvas => {
             lastGeneratedImg = canvas.toDataURL("image/png");
             area.style.display = 'none';
             document.getElementById('downloadBtn').style.display = 'block';
-            alert("تم تجهيز الصورة بنجاح!");
         });
     }
 
     function downloadImage() {
-        if(!lastGeneratedImg) return;
         const link = document.createElement('a');
         link.download = `Account_${customers[activeIdx].name}.png`;
         link.href = lastGeneratedImg;
@@ -468,47 +362,23 @@
     async function cloudAction(type) {
         const key = document.getElementById('syncKeyInput').value.trim();
         if(!key) return; 
-        const status = document.getElementById('syncStatus');
         const dot = document.getElementById('statusDot');
         const percentTxt = document.getElementById('syncPercent');
-        
         if(type === 'upload') {
             dot.classList.add('dot-red');
-            let progress = 0;
-            let interval = setInterval(() => {
-                progress += Math.floor(Math.random() * 20) + 10;
-                if(progress >= 90) { clearInterval(interval); percentTxt.innerText = "90%"; }
-                else { percentTxt.innerText = progress + "%"; }
-            }, 100);
-
-            const payload = { action: "upload", key: key, data: JSON.stringify({ customers, settings }) };
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }).then(() => {
-                clearInterval(interval);
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "upload", key: key, data: JSON.stringify({ customers, settings }) }) })
+            .then(() => {
                 percentTxt.innerText = "100%";
-                if(status) status.innerText = "✅ تم المزامنة تلقائياً";
                 dot.classList.remove('dot-red');
                 dot.classList.add('dot-green-blink');
-
-                if (isFirstUpload) {
-                    speak(`تم الرفع بنجاح لـ ${settings.shopName} وسوف يتم حفظ اي عملية حذف او إضافة أو تغيير قادمة اوتوماتيك`);
-                    isFirstUpload = false;
-                }
-
-                setTimeout(() => {
-                    dot.classList.remove('dot-green-blink');
-                    percentTxt.innerText = "0%";
-                }, 5000);
-            }).catch(() => {
-                clearInterval(interval);
-                dot.classList.remove('dot-red');
-                percentTxt.innerText = "ERR";
-            });
+                if (isFirstUpload) { speak("تم الرفع بنجاح"); isFirstUpload = false; }
+                setTimeout(() => { dot.classList.remove('dot-green-blink'); percentTxt.innerText = "0%"; }, 4000);
+            }).catch(() => { percentTxt.innerText = "ERR"; });
         } else {
             fetch(`${GOOGLE_SCRIPT_URL}?key=${key}`).then(res => res.json()).then(result => {
                 if(result && result.customers) {
                     customers = result.customers; settings = result.settings;
                     localStorage.setItem('abu_ahmed_data', JSON.stringify(customers));
-                    localStorage.setItem('abu_ahmed_settings', JSON.stringify(settings));
                     location.reload();
                 }
             });
@@ -518,16 +388,6 @@
     function exportFullData() {
         navigator.clipboard.writeText(JSON.stringify({customers, settings}));
         alert("تم نسخ البيانات");
-    }
-
-    function importFullData() {
-        const data = document.getElementById('importDataArea').value;
-        if(!data) return;
-        try {
-            const parsed = JSON.parse(data);
-            customers = parsed.customers; settings = parsed.settings;
-            save(); location.reload();
-        } catch(e) { alert("الكود خطأ"); }
     }
 
     init();
