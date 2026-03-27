@@ -172,9 +172,7 @@
     let activeIdx = null;
     let lastGeneratedImg = null;
     let isFirstUpload = true;
-    
-    // تم تعديل الرابط كما طلبت
-    const GOOGLE_SCRIPT_URL = "https://m01060079762m-create.github.io/abu-ahmed-app/";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwsmS1Ayeeo0l7LSYNu6bJEIckQ-Zn4rXfHVWCfGIlm5U2W5cU3eD1l3eHI6zbtpA/exec";
 
     window.addEventListener('popstate', function () { showMain(); });
     function pushNewState() { history.pushState({page: 'sub'}, ""); }
@@ -197,6 +195,7 @@
             if (hoursPassed >= 24) delayed.push(c);
         });
 
+        // تحديث البادج
         const badge = document.getElementById('notifBadge');
         if(delayed.length > 0) {
             badge.innerText = delayed.length;
@@ -206,6 +205,7 @@
             badge.style.display = 'none';
         }
         
+        // مسح الإشعارات القديمة (بعد ساعتين من رؤيتها)
         Object.keys(seenNotifs).forEach(key => {
             if (now - seenNotifs[key] > (2 * 60 * 60 * 1000)) delete seenNotifs[key];
         });
@@ -229,6 +229,7 @@
         document.getElementById('notificationsView').style.display = 'block';
         renderDelayedList();
         pushNewState();
+        // تسجيل وقت الرؤية للحذف التلقائي بعد ساعتين
         seenNotifs['lastView'] = Date.now();
         localStorage.setItem('abu_ahmed_seen_notifs', JSON.stringify(seenNotifs));
     }
@@ -253,6 +254,7 @@
         document.getElementById('notifBadge').style.display = 'none';
         showMain();
     }
+    // ----------------------------
 
     function init() {
         document.getElementById('displayShopName').innerText = settings.shopName;
@@ -532,3 +534,4 @@
 </script>
 </body>
 </html>
+
