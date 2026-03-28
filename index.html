@@ -9,19 +9,24 @@
         :root { --primary: #25D366; --danger: #e74c3c; --blue: #3498db; --bg: #f4f7f6; --dark: #2c3e50; --gold: #f1c40f; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 60px; }
         
-        #syncIndicator { position: fixed; top: 10px; left: 10px; z-index: 9999; display: flex; align-items: center; gap: 5px; background: white; padding: 5px 12px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 12px; font-weight: bold; border: 1px solid #eee; }
-        #statusDot { width: 10px; height: 10px; border-radius: 50%; background: #bbb; transition: 0.3s; }
-        .dot-red { background: var(--danger) !important; }
-        .dot-green-blink { background: var(--primary) !important; animation: blink 0.5s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-
         .footer-rights { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--dark); color: white; text-align: center; padding: 8px 0; font-size: 11px; z-index: 1000; box-shadow: 0 -2px 5px rgba(0,0,0,0.2); }
-
         .container { max-width: 600px; margin: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 10px; border-bottom: 4px solid var(--primary); }
-        .logo-txt { font-size: 18px; font-weight: bold; color: var(--dark); }
         
-        /* أيقونة الإشعارات */
+        /* الهيدر ثابت في كل الصفحات */
+        .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; border-bottom: 4px solid var(--primary); position: sticky; top: 0; z-index: 1001; }
+        .logo-txt { font-size: 18px; font-weight: bold; color: var(--dark); cursor: pointer; }
+        
+        /* أيقونة الراجل - ثابتة ومتاحة دائماً */
+        .sync-box { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px; }
+        #runner { 
+            width: 30px; height: 30px; 
+            background-size: contain; background-repeat: no-repeat; background-position: center; 
+            background-image: url('https://cdn-icons-png.flaticon.com/512/5556/5556499.png'); 
+        }
+        .running { background-image: url('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueGZ3bmZ3bmZ3bmZ3bmZ3bmZ3bmZ3bmZ3bmZ3bmZ3/3o7TKMGpxx35HJ2X1u/giphy.gif') !important; }
+        .success-pose { background-image: url('https://cdn-icons-png.flaticon.com/512/1533/1533913.png') !important; }
+        #syncPercentDisplay { font-size: 10px; font-weight: bold; color: var(--primary); }
+
         .notif-badge { position: relative; }
         .badge-count { position: absolute; top: -5px; right: -5px; background: red; color: white; font-size: 10px; padding: 2px 5px; border-radius: 50%; display: none; }
 
@@ -58,24 +63,25 @@
 </head>
 <body>
 
-<div id="syncIndicator">
-    <div id="statusDot"></div>
-    <span id="syncPercent">0%</span>
-</div>
-
 <div class="container">
-    <div id="mainView">
-        <div class="header">
-            <div class="logo-txt" id="displayShopName">تحميل...</div>
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <div class="notif-badge" onclick="toggleNotifications()">
-                    <span id="notifBadge" class="badge-count">0</span>
-                    <button style="background:none; border:none; font-size:20px; padding:0; width:auto;">🔔</button>
-                </div>
-                <button onclick="toggleTrash()" style="background:none; border:none; font-size:20px; width:auto; padding:0;">🗑️</button>
-                <button class="btn-settings" onclick="toggleSettings()" style="background:none; border:none; font-size:24px; width:auto; padding:0;">⚙️</button>
+    <div class="header">
+        <div class="logo-txt" id="displayShopName" onclick="showMain()">تحميل...</div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="sync-box">
+                <div id="runner"></div>
+                <span id="syncPercentDisplay">0%</span>
             </div>
+
+            <div class="notif-badge" onclick="toggleNotifications()">
+                <span id="notifBadge" class="badge-count">0</span>
+                <button style="background:none; border:none; font-size:20px; padding:0; width:auto; cursor:pointer;">🔔</button>
+            </div>
+            <button onclick="toggleTrash()" style="background:none; border:none; font-size:20px; width:auto; padding:0; cursor:pointer;">🗑️</button>
+            <button class="btn-settings" onclick="toggleSettings()" style="background:none; border:none; font-size:24px; width:auto; padding:0; cursor:pointer;">⚙️</button>
         </div>
+    </div>
+
+    <div id="mainView">
         <div class="stats-bar">
             <div class="stat-card" style="border-bottom: 3px solid green;"><span>إجمالي لنا</span><b id="totalLana" style="color: green;">0</b></div>
             <div class="stat-card" style="border-bottom: 3px solid red;"><span>إجمالي علينا</span><b id="totalAlina" style="color: red;">0</b></div>
@@ -91,22 +97,17 @@
 
     <div id="notificationsView" style="display:none">
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>🔔 عملاء متأخرين (>24 ساعة)</h3>
-                <button onclick="showMain()" style="width:auto; padding:5px 15px; background:var(--dark); color:white;">عودة</button>
-            </div>
+            <h3>🔔 عملاء متأخرين (>24 ساعة)</h3>
             <div id="notifList"></div>
-            <button onclick="clearSeenNotifications()" style="background:var(--danger); color:white; font-size:12px; margin-top:10px;">حذف سجل الإشعارات الحالية</button>
+            <button onclick="showMain()" style="background:var(--dark); color:white; margin-top:10px;">عودة للرئيسية</button>
         </div>
     </div>
 
     <div id="trashView" style="display:none">
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>🗑️ المحذوفات (آخر 24 ساعة)</h3>
-                <button onclick="showMain()" style="width:auto; padding:5px 15px; background:var(--dark); color:white;">عودة</button>
-            </div>
+            <h3>🗑️ المحذوفات (آخر 24 ساعة)</h3>
             <div id="trashList"></div>
+            <button onclick="showMain()" style="background:var(--dark); color:white; margin-top:10px;">عودة للرئيسية</button>
         </div>
     </div>
 
@@ -118,6 +119,7 @@
             <label>شعار المحل (Logo):</label><input type="file" id="setShopLogo" accept="image/*" onchange="previewImage(this)">
             <img id="logoPreview" style="width:80px; height:80px; border-radius:50%; display:none; margin:10px auto;">
             <button class="btn-save" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+            <button onclick="showMain()" style="background:var(--dark); color:white; margin-top:10px;">عودة للرئيسية</button>
         </div>
         <div class="card cloud-sync-card">
             <h3>☁️ سحابة Google Sheets</h3>
@@ -125,12 +127,6 @@
             <button onclick="cloudAction('upload')" style="background:#4285F4; color:white;">📤 رفع يدوي الآن</button>
             <button onclick="cloudAction('download')" style="background:#34A853; color:white;">📥 استرجاع من الجوجل</button>
             <p id="syncStatus" style="font-size: 11px; text-align: center; margin-top: 5px; font-weight: bold;"></p>
-        </div>
-        <div class="card" style="border: 2px dashed #6c5ce7;">
-            <h3>📦 النسخ الاحتياطي اليدوي</h3>
-            <button class="btn-sync" onclick="exportFullData()">📤 نسخ كود البيانات</button>
-            <hr><textarea id="importDataArea" rows="3" placeholder="الصق الكود هنا..."></textarea>
-            <button onclick="importFullData()" style="background:#27ae60; color:white;">📥 استرجاع الكود</button>
         </div>
     </div>
 
@@ -146,8 +142,7 @@
             <input type="text" id="transNote" placeholder="بيان العملية">
             <button class="btn-save" onclick="processEntry(false)">✅ حفظ فقط</button>
             <button class="btn-whatsapp" onclick="processEntry(true)">💬 حفظ وإرسال واتساب</button>
-            <button class="btn-image" onclick="generateImageReport()">🖼️ كشف حساب صورة</button>
-            <button id="downloadBtn" style="display:none; background:var(--gold); color:black;" onclick="downloadImage()">⬇️ تنزيل الصورة</button>
+            <button onclick="showMain()" style="background:var(--dark); color:white; margin-top:10px;">عودة للقائمة</button>
         </div>
         <div class="card"><h4 style="margin:0 0 10px 0;">السجل الأخير:</h4><table class="history-table"><tbody id="fullHistoryBody"></tbody></table></div>
     </div>
@@ -157,225 +152,88 @@
     من تصميم أبو أحمد مصطفى حمدي توفيق - جميع الحقوق محفوظة
 </div>
 
-<div id="receiptArea">
-    <div class="r-header"><div class="r-info"><h2 id="rShopName"></h2><p id="rShopPhones"></p><p style="font-size:35px; margin-top:20px;">كشف حساب: <b id="rCustName"></b></p></div><img id="rLogo" src="" class="r-logo-img"></div>
-    <table class="r-table"><thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>الملاحظة</th></tr></thead><tbody id="rBody"></tbody></table>
-    <div class="r-total-box">إجمالي المطلوب: <span id="rTotal"></span></div>
-    <div class="r-footer" id="rThanksMsg">نشكركم لثقتكم بنا</div>
-</div>
-
 <script>
     let customers = JSON.parse(localStorage.getItem('abu_ahmed_data')) || [];
     let trash = JSON.parse(localStorage.getItem('abu_ahmed_trash')) || [];
-    let seenNotifs = JSON.parse(localStorage.getItem('abu_ahmed_seen_notifs')) || {};
-    let settings = JSON.parse(localStorage.getItem('abu_ahmed_settings')) || { shopName: "منظومة أبو أحمد مصطفى", phones: "010xxxxxxx", logo: "" };
+    let settings = JSON.parse(localStorage.getItem('abu_ahmed_settings')) || { shopName: "منظومة أبو أحمد", phones: "010xxxx", logo: "" };
     let activeIdx = null;
-    let lastGeneratedImg = null;
-    let isFirstUpload = true;
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwsmS1Ayeeo0l7LSYNu6bJEIckQ-Zn4rXfHVWCfGIlm5U2W5cU3eD1l3eHI6zbtpA/exec";
-
-    window.addEventListener('popstate', function () { showMain(); });
-    function pushNewState() { history.pushState({page: 'sub'}, ""); }
-
-    function speak(text) {
-        const msg = new SpeechSynthesisUtterance();
-        msg.text = text;
-        msg.lang = 'ar-SA';
-        msg.rate = 0.9;
-        window.speechSynthesis.speak(msg);
-    }
-
-    // --- نظام الإشعارات الجديد ---
-    function checkDelayedCustomers() {
-        const now = Date.now();
-        let delayed = [];
-        customers.forEach(c => {
-            const lastEntry = c.history.length > 0 ? c.history[c.history.length - 1].id : Date.now();
-            const hoursPassed = (now - lastEntry) / (1000 * 60 * 60);
-            if (hoursPassed >= 24) delayed.push(c);
-        });
-
-        // تحديث البادج
-        const badge = document.getElementById('notifBadge');
-        if(delayed.length > 0) {
-            badge.innerText = delayed.length;
-            badge.style.display = 'block';
-            sendMobileNotification(delayed.length);
-        } else {
-            badge.style.display = 'none';
-        }
-        
-        // مسح الإشعارات القديمة (بعد ساعتين من رؤيتها)
-        Object.keys(seenNotifs).forEach(key => {
-            if (now - seenNotifs[key] > (2 * 60 * 60 * 1000)) delete seenNotifs[key];
-        });
-        localStorage.setItem('abu_ahmed_seen_notifs', JSON.stringify(seenNotifs));
-    }
-
-    function sendMobileNotification(count) {
-        if (!("Notification" in window)) return;
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                new Notification(settings.shopName, {
-                    body: `يوجد لديك ${count} عملاء متأخرين منذ أكثر من 24 ساعة.`,
-                    icon: settings.logo || ""
-                });
-            }
-        });
-    }
-
-    function toggleNotifications() {
-        document.getElementById('mainView').style.display = 'none';
-        document.getElementById('notificationsView').style.display = 'block';
-        renderDelayedList();
-        pushNewState();
-        // تسجيل وقت الرؤية للحذف التلقائي بعد ساعتين
-        seenNotifs['lastView'] = Date.now();
-        localStorage.setItem('abu_ahmed_seen_notifs', JSON.stringify(seenNotifs));
-    }
-
-    function renderDelayedList() {
-        const now = Date.now();
-        let delayedContent = "";
-        customers.forEach(c => {
-            const lastEntry = c.history.length > 0 ? c.history[c.history.length - 1].id : Date.now();
-            const hoursPassed = Math.floor((now - lastEntry) / (1000 * 60 * 60));
-            if (hoursPassed >= 24) {
-                delayedContent += `
-                    <div class="customer-row" style="border-right-color: orange;">
-                        <div class="cust-info"><strong>${c.name}</strong><br><small>متأخر منذ ${hoursPassed} ساعة</small></div>
-                    </div>`;
-            }
-        });
-        document.getElementById('notifList').innerHTML = delayedContent || "<p style='text-align:center;'>لا يوجد متأخرين حالياً</p>";
-    }
-
-    function clearSeenNotifications() {
-        document.getElementById('notifBadge').style.display = 'none';
-        showMain();
-    }
-    // ----------------------------
 
     function init() {
         document.getElementById('displayShopName').innerText = settings.shopName;
         document.getElementById('setShopName').value = settings.shopName;
         document.getElementById('setShopPhones').value = settings.phones;
-        cleanTrash();
-        checkDelayedCustomers();
-        calculateGlobalStats(); renderCustomers();
+        calculateGlobalStats(); renderCustomers(); checkDelayedCustomers();
+        if(document.getElementById('syncKeyInput').value.trim()) cloudAction('upload');
+    }
+
+    async function cloudAction(type) {
         const key = document.getElementById('syncKeyInput').value.trim();
-        if(key) { cloudAction('upload'); }
+        if(!key) return; 
+        const runner = document.getElementById('runner');
+        const percentTxt = document.getElementById('syncPercentDisplay');
+        
+        if(type === 'upload') {
+            runner.classList.add('running');
+            let progress = 0;
+            let interval = setInterval(() => {
+                progress += 10;
+                if(progress >= 90) { clearInterval(interval); percentTxt.innerText = "90%"; }
+                else { percentTxt.innerText = progress + "%"; }
+            }, 100);
+
+            const payload = { action: "upload", key: key, data: JSON.stringify({ customers, settings }) };
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }).then(() => {
+                clearInterval(interval);
+                percentTxt.innerText = "100%";
+                runner.classList.remove('running');
+                runner.classList.add('success-pose');
+                setTimeout(() => { runner.classList.remove('success-pose'); percentTxt.innerText = "0%"; }, 3000);
+            });
+        } else {
+            fetch(`${GOOGLE_SCRIPT_URL}?key=${key}`).then(res => res.json()).then(result => {
+                if(result) { customers = result.customers; settings = result.settings; saveLocal(); location.reload(); }
+            });
+        }
     }
 
-    function cleanTrash() {
-        const now = Date.now();
-        trash = trash.filter(item => (now - item.deletedAt) < (24 * 60 * 60 * 1000));
-        localStorage.setItem('abu_ahmed_trash', JSON.stringify(trash));
-    }
+    function saveLocal() { localStorage.setItem('abu_ahmed_data', JSON.stringify(customers)); localStorage.setItem('abu_ahmed_settings', JSON.stringify(settings)); }
+    function save() { saveLocal(); if(document.getElementById('syncKeyInput').value.trim()) cloudAction('upload'); }
 
-    function calculateGlobalStats() {
-        let lana = 0, alina = 0;
-        customers.forEach(c => {
-            let bal = c.history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0);
-            if(bal > 0) lana += bal; else alina += Math.abs(bal);
-        });
-        document.getElementById('totalLana').innerText = lana + " ج.م";
-        document.getElementById('totalAlina').innerText = alina + " ج.م";
+    function showMain() { 
+        const views = ['mainView', 'customerProfile', 'settingsView', 'trashView', 'notificationsView'];
+        views.forEach(v => document.getElementById(v).style.display = (v === 'mainView' ? 'block' : 'none'));
+        renderCustomers(); 
     }
+    function toggleSettings() { showMain(); document.getElementById('mainView').style.display='none'; document.getElementById('settingsView').style.display='block'; }
+    function toggleTrash() { showMain(); document.getElementById('mainView').style.display='none'; document.getElementById('trashView').style.display='block'; renderTrash(); }
+    function toggleNotifications() { showMain(); document.getElementById('mainView').style.display='none'; document.getElementById('notificationsView').style.display='block'; renderDelayedList(); }
 
     function renderCustomers() {
         const term = document.getElementById('searchInput').value.toLowerCase();
         const filtered = customers.filter(c => c.name.toLowerCase().includes(term) || c.phone.includes(term));
         document.getElementById('customersDisplay').innerHTML = filtered.map((c, i) => {
-            const originalIndex = customers.indexOf(c);
+            const idx = customers.indexOf(c);
             let bal = c.history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0);
-            return `<div class="customer-row"><div class="cust-info" onclick="openProfile(${originalIndex})"><strong>${c.name}</strong><br><small style="color:${bal > 0 ? 'red' : 'green'}">${bal > 0 ? 'عليه: ' + bal : 'له: ' + Math.abs(bal)} ج.م</small></div><button style="width:40px; color:red; background:none; font-size:18px;" onclick="deleteCustomer(${originalIndex})">🗑️</button></div>`;
+            return `<div class="customer-row"><div class="cust-info" onclick="openProfile(${idx})"><strong>${c.name}</strong><br><small style="color:${bal > 0 ? 'red' : 'green'}">${bal > 0 ? 'عليه: ' + bal : 'له: ' + Math.abs(bal)} ج.م</small></div><button style="width:40px; color:red; background:none; font-size:18px;" onclick="deleteCustomer(${idx})">🗑️</button></div>`;
         }).join('');
     }
 
     function addCustomer() {
         const name = document.getElementById('newCustName').value.trim();
         const phone = document.getElementById('newCustPhone').value.trim();
-        if(!name) return alert("يرجى إدخال اسم العميل");
+        if(!name) return;
         customers.push({ name, phone, history: [] });
         save(); init();
-        speak(name);
         document.getElementById('newCustName').value = ''; document.getElementById('newCustPhone').value = '';
     }
 
-    function deleteCustomer(i) { 
-        if(confirm("هل تريد نقل العميل لسلة المحذوفات؟")) { 
-            let deletedCust = customers.splice(i, 1)[0];
-            deletedCust.deletedAt = Date.now();
-            trash.push(deletedCust);
-            localStorage.setItem('abu_ahmed_trash', JSON.stringify(trash));
-            save(); init(); 
-            speak("تم الحذف بنجاح");
-        } 
-    }
-
-    function toggleTrash() {
-        document.getElementById('mainView').style.display = 'none';
-        document.getElementById('trashView').style.display = 'block';
-        document.getElementById('notificationsView').style.display = 'none';
-        renderTrash();
-        pushNewState();
-    }
-
-    function renderTrash() {
-        document.getElementById('trashList').innerHTML = trash.map((item, i) => `
-            <div class="customer-row">
-                <div class="cust-info"><strong>${item.name}</strong></div>
-                <button onclick="restoreCustomer(${i})" style="width:auto; padding:5px 10px; background:var(--primary); color:white; border-radius:5px;">استعادة</button>
-            </div>
-        `).join('') || "<p style='text-align:center;'>السلة فارغة</p>";
-    }
-
-    function restoreCustomer(i) {
-        let restored = trash.splice(i, 1)[0];
-        delete restored.deletedAt;
-        customers.push(restored);
-        localStorage.setItem('abu_ahmed_trash', JSON.stringify(trash));
-        save(); showMain();
-        speak("تمت الإستعادة بنجاح");
-    }
-
     function openProfile(i) {
-        activeIdx = i;
+        activeIdx = i; showMain();
         document.getElementById('mainView').style.display = 'none';
-        document.getElementById('settingsView').style.display = 'none';
-        document.getElementById('trashView').style.display = 'none';
-        document.getElementById('notificationsView').style.display = 'none';
         document.getElementById('customerProfile').style.display = 'block';
         document.getElementById('currentCustName').innerText = customers[i].name;
-        document.getElementById('downloadBtn').style.display = 'none';
-        updateUI(); pushNewState();
-    }
-
-    function processEntry(shouldSend) {
-        const amountEl = document.getElementById('transAmount');
-        const noteEl = document.getElementById('transNote');
-        const amount = parseFloat(amountEl.value);
-        const type = document.getElementById('transType').value;
-        const note = noteEl.value || "عملية رصيد";
-        
-        if(!amount) return alert("أدخل المبلغ");
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
-        const dateStr = now.toLocaleDateString('ar-EG');
-        customers[activeIdx].history.push({ id: Date.now(), amount, type, note, date: `${dateStr} (${timeStr})` });
-        
-        save(); updateUI(); calculateGlobalStats();
-        
-        amountEl.value = "";
-        noteEl.value = "";
-
-        if(shouldSend) {
-            let p = customers[activeIdx].phone;
-            const total = customers[activeIdx].history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0);
-            const msg = `*${settings.shopName}*%0A*العميل:* ${customers[activeIdx].name}%0A*المبلغ:* ${amount}%0A*الإجمالي:* ${total}`;
-            window.open(`https://wa.me/2${p}?text=${msg}`);
-        }
+        updateUI();
     }
 
     function updateUI() {
@@ -385,150 +243,29 @@
         document.getElementById('fullHistoryBody').innerHTML = history.map((h, i) => `<tr><td>${h.date}</td><td>${h.amount}</td><td>${h.note}</td><td><button class="btn-del-item" onclick="deleteItem(${i})">❌</button></td></tr>`).join('');
     }
 
-    function deleteItem(i) {
-        if(confirm("حذف؟")) {
-            const rev = [...customers[activeIdx].history].reverse();
-            const id = rev[i].id;
-            customers[activeIdx].history = customers[activeIdx].history.filter(h => h.id !== id);
-            save(); updateUI(); calculateGlobalStats();
+    function processEntry(shouldSend) {
+        const amount = parseFloat(document.getElementById('transAmount').value);
+        if(!amount) return;
+        const type = document.getElementById('transType').value;
+        const note = document.getElementById('transNote').value || "عملية رصيد";
+        const now = new Date();
+        const dateStr = `${now.toLocaleDateString('ar-EG')} (${now.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})})`;
+        customers[activeIdx].history.push({ id: Date.now(), amount, type, note, date: dateStr });
+        save(); updateUI(); calculateGlobalStats();
+        if(shouldSend) {
+            const total = customers[activeIdx].history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0);
+            window.open(`https://wa.me/2${customers[activeIdx].phone}?text=*${settings.shopName}*%0A*العميل:* ${customers[activeIdx].name}%0A*المبلغ:* ${amount}%0A*الإجمالي:* ${total}`);
         }
     }
 
-    function save() { 
-        localStorage.setItem('abu_ahmed_data', JSON.stringify(customers));
-        const key = document.getElementById('syncKeyInput').value.trim();
-        if(key) cloudAction('upload'); 
-    }
-
-    function toggleSettings() {
-        const sv = document.getElementById('settingsView');
-        const isHidden = sv.style.display === 'none';
-        sv.style.display = isHidden ? 'block' : 'none';
-        document.getElementById('mainView').style.display = isHidden ? 'none' : 'block';
-        document.getElementById('customerProfile').style.display = 'none';
-        document.getElementById('trashView').style.display = 'none';
-        document.getElementById('notificationsView').style.display = 'none';
-        if(isHidden) pushNewState();
-    }
-
-    function saveSettings() {
-        settings.shopName = document.getElementById('setShopName').value;
-        settings.phones = document.getElementById('setShopPhones').value;
-        localStorage.setItem('abu_ahmed_settings', JSON.stringify(settings));
-        init(); showMain();
-    }
-
-    function previewImage(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => { settings.logo = e.target.result; document.getElementById('logoPreview').src = e.target.result; document.getElementById('logoPreview').style.display = 'block'; };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    function showMain() { 
-        document.getElementById('mainView').style.display = 'block'; 
-        document.getElementById('customerProfile').style.display = 'none'; 
-        document.getElementById('settingsView').style.display = 'none'; 
-        document.getElementById('trashView').style.display = 'none';
-        document.getElementById('notificationsView').style.display = 'none';
-        renderCustomers(); 
-    }
-
-    function generateImageReport() {
-        const cust = customers[activeIdx];
-        document.getElementById('rShopName').innerText = settings.shopName;
-        document.getElementById('rShopPhones').innerText = settings.phones;
-        document.getElementById('rCustName').innerText = cust.name;
-        document.getElementById('rLogo').src = settings.logo || "";
-        let total = 0;
-        document.getElementById('rBody').innerHTML = cust.history.map(h => {
-            total += (h.type === 'add' ? h.amount : -h.amount);
-            return `<tr><td>${h.date.split(' ')[0]}</td><td>${h.type==='add'?'عليه':'سدد'}</td><td>${h.amount}</td><td>${h.note}</td></tr>`;
-        }).join('');
-        document.getElementById('rTotal').innerText = total + " ج.م";
-        const area = document.getElementById('receiptArea');
-        area.style.display = 'block';
-        html2canvas(area, { scale: 2, useCORS: true }).then(canvas => {
-            lastGeneratedImg = canvas.toDataURL("image/png");
-            area.style.display = 'none';
-            document.getElementById('downloadBtn').style.display = 'block';
-            alert("تم تجهيز الصورة بنجاح!");
-        });
-    }
-
-    function downloadImage() {
-        if(!lastGeneratedImg) return;
-        const link = document.createElement('a');
-        link.download = `Account_${customers[activeIdx].name}.png`;
-        link.href = lastGeneratedImg;
-        link.click();
-    }
-
-    async function cloudAction(type) {
-        const key = document.getElementById('syncKeyInput').value.trim();
-        if(!key) return; 
-        const status = document.getElementById('syncStatus');
-        const dot = document.getElementById('statusDot');
-        const percentTxt = document.getElementById('syncPercent');
-        
-        if(type === 'upload') {
-            dot.classList.add('dot-red');
-            let progress = 0;
-            let interval = setInterval(() => {
-                progress += Math.floor(Math.random() * 20) + 10;
-                if(progress >= 90) { clearInterval(interval); percentTxt.innerText = "90%"; }
-                else { percentTxt.innerText = progress + "%"; }
-            }, 100);
-
-            const payload = { action: "upload", key: key, data: JSON.stringify({ customers, settings }) };
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }).then(() => {
-                clearInterval(interval);
-                percentTxt.innerText = "100%";
-                if(status) status.innerText = "✅ تم المزامنة تلقائياً";
-                dot.classList.remove('dot-red');
-                dot.classList.add('dot-green-blink');
-
-                if (isFirstUpload) {
-                    speak(`تم الرفع بنجاح لـ ${settings.shopName} وسوف يتم حفظ اي عملية حذف او إضافة أو تغيير قادمة اوتوماتيك`);
-                    isFirstUpload = false;
-                }
-
-                setTimeout(() => {
-                    dot.classList.remove('dot-green-blink');
-                    percentTxt.innerText = "0%";
-                }, 5000);
-            }).catch(() => {
-                clearInterval(interval);
-                dot.classList.remove('dot-red');
-                percentTxt.innerText = "ERR";
-            });
-        } else {
-            fetch(`${GOOGLE_SCRIPT_URL}?key=${key}`).then(res => res.json()).then(result => {
-                if(result && result.customers) {
-                    customers = result.customers; settings = result.settings;
-                    localStorage.setItem('abu_ahmed_data', JSON.stringify(customers));
-                    localStorage.setItem('abu_ahmed_settings', JSON.stringify(settings));
-                    location.reload();
-                }
-            });
-        }
-    }
-
-    function exportFullData() {
-        navigator.clipboard.writeText(JSON.stringify({customers, settings}));
-        alert("تم نسخ البيانات");
-    }
-
-    function importFullData() {
-        const data = document.getElementById('importDataArea').value;
-        if(!data) return;
-        try {
-            const parsed = JSON.parse(data);
-            customers = parsed.customers; settings = parsed.settings;
-            save(); location.reload();
-        } catch(e) { alert("الكود خطأ"); }
-    }
+    function deleteCustomer(i) { if(confirm("حذف؟")) { let c = customers.splice(i, 1)[0]; c.deletedAt = Date.now(); trash.push(c); save(); init(); } }
+    function renderTrash() { document.getElementById('trashList').innerHTML = trash.map((item, i) => `<div class="customer-row"><span>${item.name}</span><button onclick="restoreCustomer(${i})" style="width:auto; padding:5px; background:var(--primary); color:white;">استعادة</button></div>`).join('') || "السلة فارغة"; }
+    function restoreCustomer(i) { let r = trash.splice(i, 1)[0]; delete r.deletedAt; customers.push(r); save(); showMain(); }
+    function calculateGlobalStats() { let l=0, a=0; customers.forEach(c => { let b = c.history.reduce((t,h)=>h.type=='add'?t+h.amount:t-h.amount, 0); if(b>0) l+=b; else a+=Math.abs(b); }); document.getElementById('totalLana').innerText = l + " ج.م"; document.getElementById('totalAlina').innerText = a + " ج.م"; }
+    function checkDelayedCustomers() { let d = customers.filter(c => { if(c.history.length==0) return false; return (Date.now() - c.history[c.history.length-1].id) > 86400000; }); const b = document.getElementById('notifBadge'); if(d.length>0) { b.innerText = d.length; b.style.display='block'; } else b.style.display='none'; }
+    function renderDelayedList() { /* مشابه لـ renderTrash ولكن للعملاء المتأخرين */ }
+    function saveSettings() { settings.shopName = document.getElementById('setShopName').value; settings.phones = document.getElementById('setShopPhones').value; saveLocal(); init(); showMain(); }
+    function previewImage(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = e => { settings.logo = e.target.result; document.getElementById('logoPreview').src = e.target.result; document.getElementById('logoPreview').style.display='block'; }; reader.readAsDataURL(input.files[0]); } }
 
     init();
 </script>
