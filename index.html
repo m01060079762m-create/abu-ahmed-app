@@ -3,273 +3,618 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منظومة المحمول الاحترافية V2.0</title>
+    <title>منظومة أبو أحمد مصطفى</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --primary: #25D366; --danger: #e74c3c; --blue: #3498db; --bg: #f4f7f6; --dark: #2c3e50; --gold: #f1c40f; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 60px; }
-        
-        .footer-rights { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--dark); color: white; text-align: center; padding: 8px 0; font-size: 11px; z-index: 1000; box-shadow: 0 -2px 5px rgba(0,0,0,0.2); }
-        .container { max-width: 600px; margin: auto; }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 10px; border-bottom: 4px solid var(--primary); }
-        .logo-txt { font-size: 18px; font-weight: bold; color: var(--dark); }
-        
-        /* تنسيق أيقونة الراجل الصغير جنب الإشعارات */
-        .sync-box { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 40px; }
-        #runner { 
-            width: 28px; height: 28px; 
-            background-size: contain; background-repeat: no-repeat; background-position: center; 
-            background-image: url('https://cdn-icons-png.flaticon.com/512/5556/5556499.png'); 
+        :root {
+            --primary: #25D366;
+            --danger: #e74c3c;
+            --blue: #3498db;
+            --bg: #f4f7f6;
+            --dark: #2c3e50;
+            --gold: #d4af37;
         }
-        .running { background-image: url('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueGZ3bmZ3bmZ3bmZ3bmZ3bmZ3bmZ3bmZ3bmZ3bmZ3/3o7TKMGpxx35HJ2X1u/giphy.gif') !important; }
-        .success-pose { background-image: url('https://cdn-icons-png.flaticon.com/512/1533/1533913.png') !important; }
-        #syncPercentDisplay { font-size: 9px; font-weight: bold; color: #777; }
-
-        .notif-badge { position: relative; }
-        .badge-count { position: absolute; top: -5px; right: -5px; background: red; color: white; font-size: 10px; padding: 2px 5px; border-radius: 50%; display: none; }
-
-        .stats-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-card { background: white; padding: 10px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .stat-card span { display: block; font-size: 11px; color: #777; }
-        .stat-card b { font-size: 18px; color: var(--dark); }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
-        button { border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 8px; transition: 0.3s; }
-        .btn-save { background: var(--dark); color: white; }
-        .btn-image { background: var(--blue); color: white; }
-        .btn-whatsapp { background: var(--primary); color: white; }
-        .btn-del-item { background: none; color: var(--danger); font-size: 14px; width: auto; padding: 5px; margin: 0; }
-        .btn-sync { background: #6c5ce7; color: white; }
-        .search-box { background: white; padding: 5px 15px; border-radius: 25px; margin-bottom: 15px; border: 1px solid #ddd; }
-        .customer-row { background: white; padding: 12px 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-right: 5px solid var(--blue); transition: 0.2s; }
-        .cust-info { flex-grow: 1; cursor: pointer; }
-        .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        .history-table th, .history-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
-        #receiptArea { background: white; padding: 50px; width: 1000px; margin: 20px auto; border: 20px solid var(--dark); display: none; position: absolute; left: -9999px; }
-        .r-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #eee; padding-bottom: 30px; margin-bottom: 30px; }
-        .r-logo-img { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 5px solid var(--dark); }
-        .r-info { text-align: right; flex-grow: 1; margin-right: 30px; }
-        .r-info h2 { font-size: 55px; margin: 0; color: var(--dark); }
-        .r-info p { font-size: 28px; margin: 8px 0; color: #555; }
-        .r-table { width: 100%; border-collapse: collapse; }
-        .r-table th { background: #f8f9fa; font-size: 26px; padding: 18px; border: 2px solid #ddd; }
-        .r-table td { font-size: 24px; padding: 18px; border: 2px solid #ddd; text-align: center; }
-        .r-total-box { background: var(--dark); color: white; padding: 30px; margin-top: 40px; text-align:center; border-radius: 20px; font-size: 50px; font-weight: bold; }
-        .r-footer { text-align: center; margin-top: 40px; font-size: 28px; border-top: 3px dashed #ccc; padding-top: 30px; }
-        .cloud-sync-card { border: 2px solid #4285F4 !important; background: #f8fbff !important; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 15px;
+            padding-top: 140px;
+            padding-bottom: 80px;
+        }
+        .footer-rights {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            font-size: 12px;
+            z-index: 1000;
+            border-top: 3px solid var(--gold);
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 10px 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-bottom: 5px solid var(--primary);
+            z-index: 5000;
+            height: 110px;
+        }
+        .logo-txt {
+            font-size: 19px;
+            font-weight: bold;
+            color: var(--dark);
+            cursor: pointer;
+            max-width: 180px;
+            line-height: 1.4;
+        }
+        .sync-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 50px;
+        }
+        #runner {
+            width: 35px;
+            height: 35px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/5556/5556499.png');
+        }
+        .running {
+            background-image: url('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueGZ3bmZ3bmZ3bmZ3bmZ3bmZ3bmZ3bmZ3bmZ3bmZ3/3o7TKMGpxx35HJ2X1u/giphy.gif') !important;
+        }
+        .success-pose {
+            background-image: url('https://cdn-icons-png.flaticon.com/512/1533/1533913.png') !important;
+        }
+        #syncPercentDisplay {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .notif-badge {
+            position: relative;
+        }
+        .badge-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--danger);
+            color: white;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 50%;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .stats-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            transition: 0.3s;
+        }
+        .stat-card b {
+            font-size: 22px;
+            color: var(--dark);
+            display: block;
+            margin-top: 8px;
+        }
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 18px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            margin-bottom: 22px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 16px;
+            margin: 14px 0;
+            border: 1px solid #ddd;
+            border-radius: 14px;
+            box-sizing: border-box;
+            font-size: 16px;
+            outline: none;
+        }
+        button {
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 15px;
+            transition: 0.2s;
+        }
+        .btn-save {
+            background: var(--dark);
+            color: white;
+        }
+        .btn-image {
+            background: linear-gradient(45deg, var(--blue), #2980b9);
+            color: white;
+        }
+        .btn-del-item {
+            background: none;
+            color: var(--danger);
+            font-size: 18px;
+            width: auto;
+            padding: 8px;
+        }
+        .search-box {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 40px;
+            margin-bottom: 20px;
+            border: 2px solid #eee;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .customer-row {
+            background: white;
+            padding: 18px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-right: 8px solid var(--blue);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 17px;
+        }
+        .history-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        /* تصميم الفاتورة الملكي الجديد */
+        #receiptArea {
+            background: #fff;
+            padding: 60px;
+            width: 1000px;
+            display: none;
+            position: absolute;
+            left: -9999px;
+            border: 20px double var(--gold);
+            text-align: right;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.05);
+        }
+        .r-header {
+            border-bottom: 10px double var(--gold);
+            padding-bottom: 40px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .r-header h1 {
+            font-size: 55px;
+            color: var(--dark);
+            margin: 0;
+        }
+        .r-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.8);
+        }
+        .r-table th {
+            background: var(--dark);
+            color: white;
+            padding: 20px;
+            font-size: 28px;
+        }
+        .r-table td {
+            border: 2px solid var(--gold);
+            padding: 22px;
+            font-size: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .r-total {
+            margin-top: 50px;
+            font-size: 60px;
+            font-weight: bold;
+            text-align: center;
+            background: linear-gradient(to right, var(--dark), var(--gold));
+            color: white;
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 150px;
+            color: rgba(0,0,0,0.03);
+            white-space: nowrap;
+            z-index: -1;
+            font-weight: 900;
+        }
     </style>
 </head>
 <body>
-
+<div class="header">
+    <div class="logo-txt" id="displayShopName" onclick="showMain()">تحميل...</div>
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <div class="sync-box">
+            <div id="runner"></div>
+            <span id="syncPercentDisplay">0%</span>
+        </div>
+        <div class="notif-badge" onclick="toggleNotifications()">
+            <span id="notifBadge" class="badge-count">0</span>
+            <button style="background:none; border:none; font-size:26px; width:auto;">🔔</button>
+        </div>
+        <button onclick="toggleTrash()" style="background:none; border:none; font-size:26px; width:auto;">🗑️</button>
+        <button onclick="toggleSettings()" style="background:none; border:none; font-size:30px; width:auto;">⚙️</button>
+    </div>
+</div>
 <div class="container">
     <div id="mainView">
-        <div class="header">
-            <div class="logo-txt" id="displayShopName">تحميل...</div>
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <div class="sync-box">
-                    <div id="runner"></div>
-                    <span id="syncPercentDisplay">0%</span>
-                </div>
-
-                <div class="notif-badge" onclick="toggleNotifications()">
-                    <span id="notifBadge" class="badge-count">0</span>
-                    <button style="background:none; border:none; font-size:20px; padding:0; width:auto; cursor:pointer;">🔔</button>
-                </div>
-                <button onclick="toggleTrash()" style="background:none; border:none; font-size:20px; width:auto; padding:0; cursor:pointer;">🗑️</button>
-                <button class="btn-settings" onclick="toggleSettings()" style="background:none; border:none; font-size:24px; width:auto; padding:0; cursor:pointer;">⚙️</button>
+        <div class="stats-bar">
+            <div class="stat-card" style="border-bottom: 6px solid #27ae60;">
+                <span>إجمالي لنا (مدين)</span>
+                <b id="totalLana">0</b>
+            </div>
+            <div class="stat-card" style="border-bottom: 6px solid #c0392b;">
+                <span>إجمالي علينا (دائن)</span>
+                <b id="totalAlina">0</b>
             </div>
         </div>
-        
-        <div class="stats-bar">
-            <div class="stat-card" style="border-bottom: 3px solid green;"><span>إجمالي لنا</span><b id="totalLana" style="color: green;">0</b></div>
-            <div class="stat-card" style="border-bottom: 3px solid red;"><span>إجمالي علينا</span><b id="totalAlina" style="color: red;">0</b></div>
-        </div>
         <div class="card">
-            <h3 style="margin:0 0 10px 0; font-size: 16px;">➕ إضافة عميل</h3>
-            <div style="display: flex; gap: 5px;"><input type="text" id="newCustName" placeholder="الاسم"><input type="tel" id="newCustPhone" placeholder="رقم الموبايل"></div>
-            <button class="btn-whatsapp" onclick="addCustomer()">إضافة للقائمة +</button>
+            <h3 style="margin-top:0; color:var(--dark)">➕ إضافة اسم عميل جديد</h3>
+            <div style="display: flex; gap: 12px;">
+                <input type="text" id="newCustName" placeholder="اسم العميل الرباعي">
+                <input type="tel" id="newCustPhone" placeholder="رقم الموبايل">
+            </div>
+            <button class="btn-save" style="background: var(--blue);" onclick="addCustomer()">حفظ في القائمة الرسمية +</button>
         </div>
-        <input type="text" id="searchInput" class="search-box" placeholder="🔍 ابحث بالاسم أو الرقم..." oninput="renderCustomers()">
+        <input type="text" id="searchInput" class="search-box" placeholder="🔍 ابحث عن اسم أو رقم..." oninput="renderCustomers()">
         <div id="customersDisplay"></div>
     </div>
-
     <div id="notificationsView" style="display:none">
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>🔔 عملاء متأخرين (>24 ساعة)</h3>
-                <button onclick="showMain()" style="width:auto; padding:5px 15px; background:var(--dark); color:white;">عودة</button>
-            </div>
+            <h3>🔔 قائمة التنبيهات</h3>
             <div id="notifList"></div>
-            <button onclick="clearSeenNotifications()" style="background:var(--danger); color:white; font-size:12px; margin-top:10px;">حذف سجل الإشعارات الحالية</button>
+            <button onclick="showMain()" class="btn-save">عودة للرئيسية</button>
         </div>
     </div>
-
     <div id="trashView" style="display:none">
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>🗑️ المحذوفات (آخر 24 ساعة)</h3>
-                <button onclick="showMain()" style="width:auto; padding:5px 15px; background:var(--dark); color:white;">عودة</button>
-            </div>
+            <h3>🗑️ سلة المحذوفات</h3>
             <div id="trashList"></div>
+            <button onclick="showMain()" class="btn-save">عودة للرئيسية</button>
         </div>
     </div>
-
     <div id="settingsView" style="display:none">
         <div class="card">
-            <h3>⚙️ الإعدادات</h3>
-            <label>اسم المحل:</label><input type="text" id="setShopName">
-            <label>أرقام التواصل:</label><input type="text" id="setShopPhones">
-            <label>شعار المحل (Logo):</label><input type="file" id="setShopLogo" accept="image/*" onchange="previewImage(this)">
-            <img id="logoPreview" style="width:80px; height:80px; border-radius:50%; display:none; margin:10px auto;">
-            <button class="btn-save" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+            <h3>⚙️ الإعدادات العامة</h3>
+            <label>اسم المنظومة:</label>
+            <input type="text" id="setShopName">
+            <label>رقم التواصل:</label>
+            <input type="text" id="setShopPhones">
+            <button class="btn-save" onclick="saveSettings()">💾 حفظ التغييرات</button>
         </div>
-        <div class="card cloud-sync-card">
-            <h3>☁️ سحابة Google Sheets</h3>
-            <label>كود المزامنة الخاص بك:</label><input type="text" id="syncKeyInput" placeholder="اكتب كود المزامنة هنا">
-            <button onclick="cloudAction('upload')" style="background:#4285F4; color:white;">📤 رفع يدوي الآن</button>
-            <button onclick="cloudAction('download')" style="background:#34A853; color:white;">📥 استرجاع من الجوجل</button>
-            <p id="syncStatus" style="font-size: 11px; text-align: center; margin-top: 5px; font-weight: bold;"></p>
+        <div class="card" style="border: 2px solid #4285F4; background: #f0f7ff;">
+            <h3>☁️ المزامنة السحابية الذكية</h3>
+            <input type="text" id="syncKeyInput" placeholder="أدخل كود السحابة الخاص بك">
+            <button onclick="cloudAction('upload')" style="background:#4285F4; color:white;">📤 رفع البيانات الآن</button>
+            <button onclick="cloudAction('download')" style="background:#34A853; color:white;">📥 استيراد النسخة السحابية</button>
         </div>
         <div class="card" style="border: 2px dashed #6c5ce7;">
             <h3>📦 النسخ الاحتياطي اليدوي</h3>
-            <button class="btn-sync" onclick="exportFullData()">📤 نسخ كود البيانات</button>
-            <hr><textarea id="importDataArea" rows="3" placeholder="الصق الكود هنا..."></textarea>
-            <button onclick="importFullData()" style="background:#27ae60; color:white;">📥 استرجاع الكود</button>
+            <button style="background:#6c5ce7; color:white;" onclick="exportFullData()">📤 نسخ كود البيانات</button>
+            <textarea id="importDataArea" rows="4" placeholder="الصق الكود هنا للاسترجاع"></textarea>
+            <button onclick="importFullData()" style="background:#27ae60; color:white;">📥 بدء عملية الاسترجاع</button>
         </div>
     </div>
-
     <div id="customerProfile" style="display:none">
         <div class="card">
-            <h2 id="currentCustName" style="margin:0; color: var(--blue);"></h2>
-            <div id="currentBalance" style="font-size: 22px; font-weight: bold; margin: 10px 0;"></div>
+            <h2 id="currentCustName" style="color: var(--blue); margin-bottom:5px"></h2>
+            <div id="currentBalance" style="font-size: 28px; font-weight: bold; margin-bottom:15px"></div>
             <hr>
-            <div style="display: flex; gap: 5px;">
-                <select id="transType" style="flex: 1;"><option value="add">عليه</option><option value="sub">سدد</option></select>
-                <input type="number" id="transAmount" placeholder="المبلغ" style="flex: 1;">
+            <div style="display: flex; gap: 12px;">
+                <select id="transType">
+                    <option value="add">إضافة مبلغ (عليه)</option>
+                    <option value="sub">تحصيل مبلغ (سدد)</option>
+                </select>
+                <input type="number" id="transAmount" placeholder="أدخل القيمة">
             </div>
-            <input type="text" id="transNote" placeholder="بيان العملية">
-            <button class="btn-save" onclick="processEntry(false)">✅ حفظ فقط</button>
-            <button class="btn-whatsapp" onclick="processEntry(true)">💬 حفظ وإرسال واتساب</button>
-            <button class="btn-image" onclick="generateImageReport()">🖼️ كشف حساب صورة</button>
-            <button id="downloadBtn" style="display:none; background:var(--gold); color:black;" onclick="downloadImage()">⬇️ تنزيل الصورة</button>
+            <input type="text" id="transNote" placeholder="ملاحظة عن العملية (مثلاً: دفعة هاتف)">
+            <button class="btn-save" onclick="processEntry()">✅ اعتماد العملية</button>
+            <button class="btn-image" onclick="generateReceipt()">🖼️ استخراج فاتورة فخمة</button>
+            <button onclick="showMain()" style="background:#999; color:white">🔙 رجوع للخلف</button>
         </div>
-        <div class="card"><h4 style="margin:0 0 10px 0;">السجل الأخير:</h4><table class="history-table"><tbody id="fullHistoryBody"></tbody></table></div>
+        <div class="card">
+            <table class="history-table">
+                <tbody id="fullHistoryBody"></tbody>
+            </table>
+        </div>
     </div>
 </div>
-
-<div class="footer-rights">
-    من تصميم أبو أحمد مصطفى حمدي توفيق - جميع الحقوق محفوظة
-</div>
-
 <div id="receiptArea">
-    <div class="r-header"><div class="r-info"><h2 id="rShopName"></h2><p id="rShopPhones"></p><p style="font-size:35px; margin-top:20px;">كشف حساب: <b id="rCustName"></b></p></div><img id="rLogo" src="" class="r-logo-img"></div>
-    <table class="r-table"><thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>الملاحظة</th></tr></thead><tbody id="rBody"></tbody></table>
-    <div class="r-total-box">إجمالي المطلوب: <span id="rTotal"></span></div>
-    <div class="r-footer" id="rThanksMsg">نشكركم لثقتكم بنا</div>
+    <div class="watermark">أبو أحمد مصطفى</div>
+    <div class="r-header">
+        <h1 id="rShopName"></h1>
+        <p id="rShopPhone" style="font-size:30px; margin-top:10px"></p>
+        <h2 style="font-size:40px; color:var(--gold)">كشف حساب رسمي: <span id="rCustName"></span></h2>
+        <p style="font-size:22px">التاريخ: <span id="rDateNow"></span></p>
+    </div>
+    <table class="r-table">
+        <thead>
+            <tr>
+                <th>التاريخ</th>
+                <th>بيان العملية</th>
+                <th>المبلغ</th>
+                <th>الحالة</th>
+            </tr>
+        </thead>
+        <tbody id="rBody"></tbody>
+    </table>
+    <div class="r-total">الرصيد النهائي المستحق: <span id="rTotal"></span> ج.م</div>
 </div>
-
+<div class="footer-rights">جميع الحقوق محفوظة © منظومة أبو أحمد مصطفى حمدي 2026</div>
 <script>
-    // الجافا سكريبت الأصلية مع تعديل دالة cloudAction لتشغيل الراجل
     let customers = JSON.parse(localStorage.getItem('abu_ahmed_data')) || [];
     let trash = JSON.parse(localStorage.getItem('abu_ahmed_trash')) || [];
-    let seenNotifs = JSON.parse(localStorage.getItem('abu_ahmed_seen_notifs')) || {};
-    let settings = JSON.parse(localStorage.getItem('abu_ahmed_settings')) || { shopName: "منظومة أبو أحمد مصطفى", phones: "010xxxxxxx", logo: "" };
+    let settings = JSON.parse(localStorage.getItem('abu_ahmed_settings')) || { shopName: "منظومة أبو أحمد", phones: "01021941946" };
     let activeIdx = null;
-    let lastGeneratedImg = null;
-    let isFirstUpload = true;
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwsmS1Ayeeo0l7LSYNu6bJEIckQ-Zn4rXfHVWCfGIlm5U2W5cU3eD1l3eHI6zbtpA/exec";
-
-    // (باقي الدوال الأساسية init, render, add, delete... كما هي في كودك)
-    window.addEventListener('popstate', function () { showMain(); });
-    function pushNewState() { history.pushState({page: 'sub'}, ""); }
-    function speak(text) { const msg = new SpeechSynthesisUtterance(); msg.text = text; msg.lang = 'ar-SA'; msg.rate = 0.9; window.speechSynthesis.speak(msg); }
+    const GURL = "https://script.google.com/macros/s/AKfycbwsmS1Ayeeo0l7LSYNu6bJEIckQ-Zn4rXfHVWCfGIlm5U2W5cU3eD1l3eHI6zbtpA/exec";
     
     function init() {
         document.getElementById('displayShopName').innerText = settings.shopName;
         document.getElementById('setShopName').value = settings.shopName;
         document.getElementById('setShopPhones').value = settings.phones;
-        cleanTrash(); checkDelayedCustomers(); calculateGlobalStats(); renderCustomers();
-        const key = document.getElementById('syncKeyInput').value.trim();
-        if(key) { cloudAction('upload'); }
+        calculateGlobalStats();
+        renderCustomers();
     }
-
-    async function cloudAction(type) {
-        const key = document.getElementById('syncKeyInput').value.trim();
-        if(!key) return; 
-        const status = document.getElementById('syncStatus');
-        const runner = document.getElementById('runner');
-        const percentTxt = document.getElementById('syncPercentDisplay');
-        
-        if(type === 'upload') {
-            runner.classList.add('running'); // الراجل يبدأ يجري
-            let progress = 0;
-            let interval = setInterval(() => {
-                progress += Math.floor(Math.random() * 20) + 10;
-                if(progress >= 90) { clearInterval(interval); percentTxt.innerText = "90%"; }
-                else { percentTxt.innerText = progress + "%"; }
-            }, 100);
-
-            const payload = { action: "upload", key: key, data: JSON.stringify({ customers, settings }) };
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }).then(() => {
-                clearInterval(interval);
-                percentTxt.innerText = "100%";
-                if(status) status.innerText = "✅ تم المزامنة";
-                runner.classList.remove('running');
-                runner.classList.add('success-pose'); // علامة تمام 👍
-
-                if (isFirstUpload) {
-                    speak(`تم الرفع بنجاح يا أبو أحمد`);
-                    isFirstUpload = false;
-                }
-
-                setTimeout(() => {
-                    runner.classList.remove('success-pose');
-                    percentTxt.innerText = "0%";
-                }, 4000);
-            }).catch(() => {
-                clearInterval(interval);
-                runner.classList.remove('running');
-                percentTxt.innerText = "خطأ";
-            });
-        } else {
-            fetch(`${GOOGLE_SCRIPT_URL}?key=${key}`).then(res => res.json()).then(result => {
-                if(result && result.customers) {
-                    customers = result.customers; settings = result.settings;
-                    localStorage.setItem('abu_ahmed_data', JSON.stringify(customers));
-                    localStorage.setItem('abu_ahmed_settings', JSON.stringify(settings));
-                    location.reload();
-                }
-            });
+    
+    function hideAll() {
+        ['mainView', 'notificationsView', 'trashView', 'settingsView', 'customerProfile'].forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
+    }
+    
+    function showMain() {
+        hideAll();
+        document.getElementById('mainView').style.display = 'block';
+        renderCustomers();
+    }
+    
+    function toggleSettings() {
+        hideAll();
+        document.getElementById('settingsView').style.display = 'block';
+    }
+    
+    function toggleTrash() {
+        hideAll();
+        document.getElementById('trashView').style.display = 'block';
+        renderTrash();
+    }
+    
+    function toggleNotifications() {
+        hideAll();
+        document.getElementById('notificationsView').style.display = 'block';
+    }
+    
+    function openProfile(i) {
+        activeIdx = i;
+        hideAll();
+        document.getElementById('customerProfile').style.display = 'block';
+        document.getElementById('currentCustName').innerText = customers[i].name;
+        updateUI();
+    }
+    
+    function renderCustomers() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const display = document.getElementById('customersDisplay');
+        display.innerHTML = customers.filter(c => c.name.toLowerCase().includes(term)).map((c, i) => {
+            let bal = c.history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0);
+            let realIdx = customers.indexOf(c);
+            return `<div class="customer-row">
+                <div class="cust-info" onclick="openProfile(${realIdx})" style="flex:1">
+                    <strong>${c.name}</strong><br>
+                    <small style="color:${bal>0?'#c0392b':'#27ae60'}; font-weight:bold">${bal>0?'مدين (عليه)':'دائن (له)'}: ${Math.abs(bal)} ج.م</small>
+                </div>
+                <button style="color:var(--danger); background:none; width:auto; font-size:26px; margin:0" onclick="deleteCustomer(${realIdx})">🗑️</button>
+            </div>`;
+        }).join('');
+    }
+    
+    function addCustomer() {
+        const n = document.getElementById('newCustName').value.trim();
+        if(!n) return alert("يرجى إدخال اسم العميل!");
+        customers.unshift({ name: n, phone: document.getElementById('newCustPhone').value, history: [] });
+        save();
+        init();
+        showMain();
+        document.getElementById('newCustName').value = '';
+        document.getElementById('newCustPhone').value = '';
+    }
+    
+    function processEntry() {
+        const amt = parseFloat(document.getElementById('transAmount').value);
+        if(!amt) return alert("يرجى تحديد المبلغ!");
+        const type = document.getElementById('transType').value;
+        const note = document.getElementById('transNote').value || "عملية حسابية";
+        const date = new Date().toLocaleDateString('ar-EG');
+        customers[activeIdx].history.push({ id: Date.now(), amount: amt, type: type, note: note, date: date });
+        save();
+        updateUI();
+        calculateGlobalStats();
+        document.getElementById('transAmount').value='';
+        document.getElementById('transNote').value='';
+    }
+    
+    function generateReceipt() {
+        const area = document.getElementById('receiptArea');
+        const c = customers[activeIdx];
+        document.getElementById('rShopName').innerText = settings.shopName;
+        document.getElementById('rShopPhone').innerText = "تواصل: " + settings.phones;
+        document.getElementById('rCustName').innerText = c.name;
+        document.getElementById('rDateNow').innerText = new Date().toLocaleDateString('ar-EG');
+        let total = 0;
+        document.getElementById('rBody').innerHTML = c.history.map(h => {
+            total += (h.type === 'add' ? h.amount : -h.amount);
+            return `<tr><td>${h.date}</td><td>${h.note}</td><td>${h.amount}</td><td>${h.type==='add'?'عليه':'سدد'}</td></tr>`;
+        }).join('');
+        document.getElementById('rTotal').innerText = total;
+        area.style.display = 'block';
+        html2canvas(area, { scale: 2 }).then(canvas => {
+            let link = document.createElement('a');
+            link.download = `فاتورة_${c.name}_${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            area.style.display = 'none';
+        });
+    }
+    
+    function updateUI() {
+        const bal = customers[activeIdx].history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0);
+        document.getElementById('currentBalance').innerText = `الرصيد الحالي: ${bal} ج.م`;
+        document.getElementById('fullHistoryBody').innerHTML = [...customers[activeIdx].history].reverse().map(h => {
+            return `<tr><td>${h.date}</td><td style="color:${h.type=='add'?'red':'green'}">${h.amount}</td><td>${h.note}</td><td><button class="btn-del-item" onclick="deleteItem('${h.id}')">❌</button></td></tr>`;
+        }).join('');
+    }
+    
+    function deleteItem(id) {
+        if(confirm("هل أنت متأكد من حذف هذه العملية نهائياً؟")) {
+            customers[activeIdx].history = customers[activeIdx].history.filter(h => h.id != id);
+            save();
+            updateUI();
+            calculateGlobalStats();
         }
     }
-
-    // [باقي الدوال الفرعية: renderCustomers, addCustomer, deleteCustomer, processEntry, إلخ... يتم وضعها هنا]
-    function checkDelayedCustomers() { const now = Date.now(); let delayed = []; customers.forEach(c => { const lastEntry = c.history.length > 0 ? c.history[c.history.length - 1].id : Date.now(); const hoursPassed = (now - lastEntry) / (1000 * 60 * 60); if (hoursPassed >= 24) delayed.push(c); }); const badge = document.getElementById('notifBadge'); if(delayed.length > 0) { badge.innerText = delayed.length; badge.style.display = 'block'; } else { badge.style.display = 'none'; } }
-    function cleanTrash() { const now = Date.now(); trash = trash.filter(item => (now - item.deletedAt) < (24 * 60 * 60 * 1000)); localStorage.setItem('abu_ahmed_trash', JSON.stringify(trash)); }
-    function calculateGlobalStats() { let lana = 0, alina = 0; customers.forEach(c => { let bal = c.history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0); if(bal > 0) lana += bal; else alina += Math.abs(bal); }); document.getElementById('totalLana').innerText = lana + " ج.م"; document.getElementById('totalAlina').innerText = alina + " ج.م"; }
-    function renderCustomers() { const term = document.getElementById('searchInput').value.toLowerCase(); const filtered = customers.filter(c => c.name.toLowerCase().includes(term) || c.phone.includes(term)); document.getElementById('customersDisplay').innerHTML = filtered.map((c, i) => { const originalIndex = customers.indexOf(c); let bal = c.history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0); return `<div class="customer-row"><div class="cust-info" onclick="openProfile(${originalIndex})"><strong>${c.name}</strong><br><small style="color:${bal > 0 ? 'red' : 'green'}">${bal > 0 ? 'عليه: ' + bal : 'له: ' + Math.abs(bal)} ج.م</small></div><button style="width:40px; color:red; background:none; font-size:18px;" onclick="deleteCustomer(${originalIndex})">🗑️</button></div>`; }).join(''); }
-    function addCustomer() { const name = document.getElementById('newCustName').value.trim(); const phone = document.getElementById('newCustPhone').value.trim(); if(!name) return alert("يرجى إدخال اسم العميل"); customers.push({ name, phone, history: [] }); save(); init(); speak(name); document.getElementById('newCustName').value = ''; document.getElementById('newCustPhone').value = ''; }
-    function deleteCustomer(i) { if(confirm("حذف؟")) { let deletedCust = customers.splice(i, 1)[0]; deletedCust.deletedAt = Date.now(); trash.push(deletedCust); localStorage.setItem('abu_ahmed_trash', JSON.stringify(trash)); save(); init(); } }
-    function toggleTrash() { document.getElementById('mainView').style.display='none'; document.getElementById('trashView').style.display='block'; renderTrash(); pushNewState(); }
-    function renderTrash() { document.getElementById('trashList').innerHTML = trash.map((item, i) => `<div class="customer-row"><div class="cust-info"><strong>${item.name}</strong></div><button onclick="restoreCustomer(${i})" style="width:auto; padding:5px 10px; background:var(--primary); color:white;">استعادة</button></div>`).join('') || "السلة فارغة"; }
-    function restoreCustomer(i) { let restored = trash.splice(i, 1)[0]; delete restored.deletedAt; customers.push(restored); localStorage.setItem('abu_ahmed_trash', JSON.stringify(trash)); save(); showMain(); }
-    function toggleNotifications() { document.getElementById('mainView').style.display='none'; document.getElementById('notificationsView').style.display='block'; renderDelayedList(); pushNewState(); }
-    function renderDelayedList() { const now = Date.now(); let delayedContent = ""; customers.forEach(c => { const lastEntry = c.history.length > 0 ? c.history[c.history.length - 1].id : Date.now(); const hoursPassed = Math.floor((now - lastEntry) / (1000 * 60 * 60)); if (hoursPassed >= 24) { delayedContent += `<div class="customer-row"><div class="cust-info"><strong>${c.name}</strong><br><small>متأخر منذ ${hoursPassed} ساعة</small></div></div>`; } }); document.getElementById('notifList').innerHTML = delayedContent || "لا يوجد متأخرين"; }
-    function openProfile(i) { activeIdx = i; document.getElementById('mainView').style.display='none'; document.getElementById('customerProfile').style.display='block'; document.getElementById('currentCustName').innerText = customers[i].name; updateUI(); pushNewState(); }
-    function updateUI() { const total = customers[activeIdx].history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0); document.getElementById('currentBalance').innerHTML = `الحساب: <span style="color:${total>=0?'red':'green'}">${total} ج.م</span>`; const history = [...customers[activeIdx].history].reverse(); document.getElementById('fullHistoryBody').innerHTML = history.map((h, i) => `<tr><td>${h.date}</td><td>${h.amount}</td><td>${h.note}</td><td><button class="btn-del-item" onclick="deleteItem(${i})">❌</button></td></tr>`).join(''); }
-    function processEntry(shouldSend) { const amount = parseFloat(document.getElementById('transAmount').value); const type = document.getElementById('transType').value; const note = document.getElementById('transNote').value || "عملية رصيد"; if(!amount) return alert("المبلغ؟"); const now = new Date(); const timeStr = now.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'}); const dateStr = now.toLocaleDateString('ar-EG'); customers[activeIdx].history.push({ id: Date.now(), amount, type, note, date: `${dateStr} (${timeStr})` }); save(); updateUI(); calculateGlobalStats(); if(shouldSend) { let p = customers[activeIdx].phone; const total = customers[activeIdx].history.reduce((t, h) => h.type=='add' ? t+h.amount : t-h.amount, 0); const msg = `*${settings.shopName}*%0A*العميل:* ${customers[activeIdx].name}%0A*المبلغ:* ${amount}%0A*الإجمالي:* ${total}`; window.open(`https://wa.me/2${p}?text=${msg}`); } }
-    function deleteItem(i) { if(confirm("حذف؟")) { const rev = [...customers[activeIdx].history].reverse(); const id = rev[i].id; customers[activeIdx].history = customers[activeIdx].history.filter(h => h.id !== id); save(); updateUI(); } }
-    function save() { localStorage.setItem('abu_ahmed_data', JSON.stringify(customers)); const key = document.getElementById('syncKeyInput').value.trim(); if(key) cloudAction('upload'); }
-    function toggleSettings() { document.getElementById('mainView').style.display='none'; document.getElementById('settingsView').style.display='block'; pushNewState(); }
-    function saveSettings() { settings.shopName = document.getElementById('setShopName').value; settings.phones = document.getElementById('setShopPhones').value; localStorage.setItem('abu_ahmed_settings', JSON.stringify(settings)); init(); showMain(); }
-    function showMain() { document.getElementById('mainView').style.display='block'; document.getElementById('customerProfile').style.display='none'; document.getElementById('settingsView').style.display='none'; document.getElementById('trashView').style.display='none'; document.getElementById('notificationsView').style.display='none'; renderCustomers(); }
-    function exportFullData() { navigator.clipboard.writeText(JSON.stringify({customers, settings})); alert("تم النسخ"); }
-    function importFullData() { const data = document.getElementById('importDataArea').value; if(!data) return; try { const parsed = JSON.parse(data); customers = parsed.customers; settings = parsed.settings; save(); location.reload(); } catch(e) { alert("خطأ"); } }
-    function previewImage(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = e => { settings.logo = e.target.result; document.getElementById('logoPreview').src = e.target.result; document.getElementById('logoPreview').style.display = 'block'; }; reader.readAsDataURL(input.files[0]); } }
-    function clearSeenNotifications() { document.getElementById('notifBadge').style.display = 'none'; showMain(); }
-
+    
+    function cloudAction(type) {
+        const key = document.getElementById('syncKeyInput').value.trim();
+        if(!key) return alert("يرجى إدخال كود المزامنة الخاص بك!");
+        const r = document.getElementById('runner');
+        const p = document.getElementById('syncPercentDisplay');
+        
+        if(type==='upload') {
+            r.classList.add('running');
+            let progress = 0;
+            let interval = setInterval(() => {
+                progress += 5;
+                p.innerText = progress + "%";
+                if(progress >= 95) clearInterval(interval);
+            }, 100);
+            
+            fetch(GURL, {method:'POST', mode:'no-cors', body: JSON.stringify({action:'upload', key:key, data: JSON.stringify({customers, settings})})})
+            .then(() => {
+                setTimeout(() => {
+                    clearInterval(interval);
+                    p.innerText = "100%";
+                    r.classList.replace('running', 'success-pose');
+                    alert("تم الرفع بنجاح يا أبو أحمد ✅");
+                    setTimeout(() => { r.classList.remove('success-pose'); p.innerText = "0%"; }, 4000);
+                }, 1000);
+            });
+        } else {
+            p.innerText = "جاري التحميل...";
+            fetch(`${GURL}?key=${key}`).then(res => res.json()).then(d => {
+                if(d){ 
+                    customers=d.customers; settings=d.settings; save(); 
+                    p.innerText = "تم الاستيراد ✅";
+                    setTimeout(() => location.reload(), 1000);
+                } else { alert("الكود غير صحيح أو لا توجد بيانات ❌"); }
+            }).catch(e => alert("حدث خطأ في الاتصال بالسحابة"));
+        }
+    }
+    
+    function exportFullData() {
+        navigator.clipboard.writeText(JSON.stringify({customers, settings}));
+        alert("تم نسخ كود البيانات بالكامل ✅");
+    }
+    
+    function importFullData() {
+        try {
+            const d = JSON.parse(document.getElementById('importDataArea').value);
+            if(confirm("سيتم استبدال البيانات الحالية، هل أنت متأكد؟")) {
+                customers=d.customers;
+                settings=d.settings;
+                save();
+                location.reload();
+            }
+        } catch(e){ alert("الكود الذي قمت بلصقه غير صحيح ❌"); }
+    }
+    
+    function calculateGlobalStats() {
+        let l=0, a=0;
+        customers.forEach(c => {
+            let b = c.history.reduce((t,h)=>h.type=='add'?t+h.amount:t-h.amount, 0);
+            if(b>0) l+=b; else a+=Math.abs(b);
+        });
+        document.getElementById('totalLana').innerText = l + " ج.م";
+        document.getElementById('totalAlina').innerText = a + " ج.م";
+    }
+    
+    function save() {
+        localStorage.setItem('abu_ahmed_data', JSON.stringify(customers));
+        localStorage.setItem('abu_ahmed_settings', JSON.stringify(settings));
+    }
+    
+    function renderTrash() {
+        const list = trash.map((c, i) => {
+            return `<div class="customer-row"><span>${c.name}</span><button onclick="restoreCust(${i})" style="background:var(--blue); color:white; width:auto; padding:8px 15px">استعادة</button></div>`;
+        }).join('');
+        document.getElementById('trashList').innerHTML = list || "السلة فارغة حالياً";
+    }
+    
+    function restoreCust(i) {
+        customers.push(trash.splice(i, 1)[0]);
+        save();
+        showMain();
+    }
+    
+    function deleteCustomer(i) {
+        if(confirm("هل تريد نقل هذا العميل إلى سلة المحذوفات؟")) {
+            let c = customers.splice(i, 1)[0];
+            trash.push(c);
+            save();
+            renderCustomers();
+        }
+    }
+    
+    function saveSettings() {
+        settings.shopName = document.getElementById('setShopName').value;
+        settings.phones = document.getElementById('setShopPhones').value;
+        save();
+        init();
+        showMain();
+        alert("تم تحديث إعدادات المنظومة بنجاح ✅");
+    }
+    
     init();
 </script>
 </body>
 </html>
+
